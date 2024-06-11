@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import NavBar from "../components/NavBar";
 import BottomBar from "../components/BottomBar";
+import Workout from "../components/Workout";
 
 function MainScreen() {
   return (
@@ -10,7 +11,7 @@ function MainScreen() {
         <NavBar />
       </View>
       <SafeAreaView style={styles.screen}>
-        <Text>Main Screen</Text>
+        <Workout />
         <StatusBar style="auto" />
       </SafeAreaView>
         <View>
@@ -27,6 +28,5 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
   },
 });
