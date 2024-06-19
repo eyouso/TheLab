@@ -37,6 +37,7 @@ function Workout() {
             value={drillLiftName}
             autoCorrect={false}
             style={styles.inputContainer}
+            placeholder="Add a new drill or lift"
           />
           <PrimaryButton onPress={addDrillLift}>+</PrimaryButton>
         </View>
@@ -55,11 +56,9 @@ function Workout() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.keyboardAvoidingView}
-    >
+    
       <View style={styles.container}>
+    
         <TextInput
           style={styles.workoutTitleText}
           onChangeText={setWorkoutTitle}
@@ -77,7 +76,6 @@ function Workout() {
           </GestureHandlerRootView>
         </View>
       </View>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -113,8 +111,7 @@ const styles = StyleSheet.create({
   inputAndButtonContainer: {
     flexDirection: "row",
     width: "100%",
-    padding: 10,
-    marginBottom: 10,
+    marginVertical: 10,
   },
   inputContainer: {
     flex: 1,

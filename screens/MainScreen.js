@@ -27,7 +27,7 @@ export default MainScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     alignItems: "center",
   },
 });
