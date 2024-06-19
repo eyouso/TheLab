@@ -29,15 +29,29 @@ function Workout() {
   }
 
   const renderItem = ({ item, drag, isActive }) => {
-    return (
-      <TouchableOpacity
-        style={[styles.item, isActive && styles.activeItem]}
-        onLongPress={drag}
-        delayLongPress={100}
-      >
-        <Text style={styles.itemText}>{item.value}</Text>
-      </TouchableOpacity>
-    );
+    if (item.type === "input") {
+      return (
+        <View style={styles.inputAndButtonContainer}>
+          <TextInput
+            onChangeText={setDrillLiftName}
+            value={drillLiftName}
+            autoCorrect={false}
+            style={styles.inputContainer}
+          />
+          <PrimaryButton onPress={addDrillLift}>+</PrimaryButton>
+        </View>
+      );
+    } else {
+      return (
+        <TouchableOpacity
+          style={[styles.item, isActive && styles.activeItem]}
+          onLongPress={drag}
+          delayLongPress={100}
+        >
+          <Text style={styles.itemText}>{item.value}</Text>
+        </TouchableOpacity>
+      );
+    }
   };
 
   return (
@@ -54,22 +68,13 @@ function Workout() {
         <View style={styles.listContainerWidth}>
           <GestureHandlerRootView style={styles.listContainer}>
             <DraggableFlatList
-              data={drillLifts}
-              onDragEnd={({ data }) => setDrillLifts(data)}
+              data={[...drillLifts, { id: "input", type: "input" }]}
+              onDragEnd={({ data }) => setDrillLifts(data.filter(item => item.type !== "input"))}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
               style={styles.list}
             />
           </GestureHandlerRootView>
-        </View>
-        <View style={styles.inputAndButtonContainer}>
-          <TextInput
-            onChangeText={setDrillLiftName}
-            value={drillLiftName}
-            autoCorrect={false}
-            style={styles.inputContainer}
-          />
-          <PrimaryButton onPress={addDrillLift}>+</PrimaryButton>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -101,6 +106,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   listContainer: {
+    flex: 1,
     width: "100%",
     marginVertical: 10,
   },
@@ -108,6 +114,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     padding: 10,
+    marginBottom: 10,
   },
   inputContainer: {
     flex: 1,
