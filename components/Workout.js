@@ -5,6 +5,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -58,7 +60,6 @@ function Workout() {
   return (
     
       <View style={styles.container}>
-    
         <TextInput
           style={styles.workoutTitleText}
           onChangeText={setWorkoutTitle}
@@ -76,6 +77,7 @@ function Workout() {
           </GestureHandlerRootView>
         </View>
       </View>
+    
   );
 }
 

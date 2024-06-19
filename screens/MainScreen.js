@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import NavBar from "../components/NavBar";
 import BottomBar from "../components/BottomBar";
@@ -11,10 +11,12 @@ function MainScreen() {
       <View>
         <NavBar />
       </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.screen}>
           <Workout />
           <StatusBar style="auto" />
         </SafeAreaView>
+      </TouchableWithoutFeedback>
       <View>
         <BottomBar />
       </View>
