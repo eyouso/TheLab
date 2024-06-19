@@ -1,9 +1,17 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableWithoutFeedback, Keyboard } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import NavBar from "../components/NavBar";
 import BottomBar from "../components/BottomBar";
 import Workout from "../components/Workout";
-
 
 function MainScreen() {
   return (
@@ -11,12 +19,18 @@ function MainScreen() {
       <View>
         <NavBar />
       </View>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView style={styles.screen}>
-          <Workout />
-          <StatusBar style="auto" />
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+        keyboardVerticalOffset={100}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <SafeAreaView style={styles.screen}>
+            <Workout />
+            <StatusBar style="auto" />
+          </SafeAreaView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
       <View>
         <BottomBar />
       </View>
@@ -31,5 +45,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     alignItems: "center",
+  },
+  container: {
+    flex: 1,
   },
 });
