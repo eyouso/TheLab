@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     alignItems: "center",
     //adjusted for bottom bar, will probably need to update
-    marginBottom: 30
+    marginBottom: 100
   },
   container: {
     flex: 1,
