@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   TextInput,
@@ -22,14 +22,24 @@ function Workout() {
   const [drillLifts, setDrillLifts] = useState([]);
   const [containerHeight, setContainerHeight] = useState(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", (event) => {
       const keyboardHeight = event.endCoordinates.height;
       const offset = Platform.OS === "ios" ? 125 : 0; // Add some extra offset for iOS
-      setContainerHeight(SCREEN_HEIGHT - keyboardHeight - offset);
-      setIsKeyboardVisible(true);
+      const newHeight = SCREEN_HEIGHT - keyboardHeight - offset;
+
+      if (containerRef.current) {
+        containerRef.current.measure((x, y, width, height) => {
+          if (height > newHeight) {
+            setContainerHeight(newHeight);
+            setIsKeyboardVisible(true);
+          }
+        });
+      }
     });
+
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
       setContainerHeight(null);
       setIsKeyboardVisible(false);
@@ -62,14 +72,17 @@ function Workout() {
   );
 
   return (
-    <View style={[styles.container, containerHeight ? { height: containerHeight } : {}]}>
+    <View
+      style={[styles.container, containerHeight ? { height: containerHeight } : {}]}
+      ref={containerRef}
+    >
       <TextInput
         style={styles.workoutTitleText}
         onChangeText={setWorkoutTitle}
         value={workoutTitle}
       />
 
-      <GestureHandlerRootView style={[styles.listContainer, isKeyboardVisible ? { flex: 1 } : {}]}>
+      <GestureHandlerRootView style={[styles.listContainer, containerHeight ? { flex: 1 } : {}]}>
         <DraggableFlatList
           data={drillLifts}
           onDragEnd={({ data }) => setDrillLifts(data)}
@@ -123,8 +136,7 @@ const styles = StyleSheet.create({
   inputAndButtonContainer: {
     flexDirection: "row",
     width: "100%",
-    marginTop: 10,
-    padding: 10,
+    paddingVertical: 10,
     borderRadius: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 2 },
