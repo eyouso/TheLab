@@ -5,6 +5,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -54,26 +58,33 @@ function Workout() {
   };
 
   return (
-    
-      <View style={styles.container}>
-        <TextInput
-          style={styles.workoutTitleText}
-          onChangeText={setWorkoutTitle}
-          value={workoutTitle}
-        />
-        <View style={styles.listContainerWidth}>
-          <GestureHandlerRootView style={styles.listContainer}>
-            <DraggableFlatList
-              data={[...drillLifts, { id: "input", type: "input" }]}
-              onDragEnd={({ data }) => setDrillLifts(data.filter(item => item.type !== "input"))}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              style={styles.list}
-            />
-          </GestureHandlerRootView>
-        </View>
-      </View>
-    
+    //<View style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+        keyboardVerticalOffset={150}
+      >
+          <TextInput
+            style={styles.workoutTitleText}
+            onChangeText={setWorkoutTitle}
+            value={workoutTitle}
+          />
+          <View style={styles.listContainerWidth}>
+            <GestureHandlerRootView style={styles.listContainer}>
+              <DraggableFlatList
+                data={[...drillLifts, { id: "input", type: "input" }]}
+                onDragEnd={({ data }) =>
+                  setDrillLifts(data.filter((item) => item.type !== "input"))
+                }
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                bounces={false}
+                style={styles.list}
+              />
+            </GestureHandlerRootView>
+          </View>
+      </KeyboardAvoidingView>
+    //</View>
   );
 }
 

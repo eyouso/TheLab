@@ -19,18 +19,12 @@ function MainScreen() {
       <View>
         <NavBar />
       </View>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-        keyboardVerticalOffset={100}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <SafeAreaView style={styles.screen}>
-            <Workout />
-            <StatusBar style="auto" />
-          </SafeAreaView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.screen}>
+          <Workout />
+          <StatusBar style="auto" />
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
       <View>
         <BottomBar />
       </View>
