@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
   StyleSheet,
   Text,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Keyboard,
-  TouchableWithoutFeedback,
+  Dimensions,
   Platform,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
@@ -15,10 +14,29 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Colors from "../constants/colors";
 import PrimaryButton from "./PrimaryButton";
 
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 function Workout() {
   const [workoutTitle, setWorkoutTitle] = useState("New Workout");
   const [drillLiftName, setDrillLiftName] = useState("");
   const [drillLifts, setDrillLifts] = useState([]);
+  const [maxHeight, setMaxHeight] = useState(SCREEN_HEIGHT);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", (event) => {
+      const keyboardHeight = event.endCoordinates.height;
+      const offset = Platform.OS === "ios" ? 30 : 0; // Add some extra offset for iOS
+      setMaxHeight(SCREEN_HEIGHT - keyboardHeight - offset);
+    });
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setMaxHeight(SCREEN_HEIGHT);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   function addDrillLift() {
     if (drillLiftName.trim()) {
@@ -58,42 +76,35 @@ function Workout() {
   };
 
   return (
-    //<View style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-        keyboardVerticalOffset={150}
-      >
-          <TextInput
-            style={styles.workoutTitleText}
-            onChangeText={setWorkoutTitle}
-            value={workoutTitle}
+    <View style={[styles.container, { maxHeight: maxHeight - 100 }]}>
+      <TextInput
+        style={styles.workoutTitleText}
+        onChangeText={setWorkoutTitle}
+        value={workoutTitle}
+      />
+
+      <View style={styles.listContainerWidth}>
+        <GestureHandlerRootView style={styles.listContainer}>
+          <DraggableFlatList
+            data={[...drillLifts, { id: "input", type: "input" }]}
+            onDragEnd={({ data }) =>
+              setDrillLifts(data.filter((item) => item.type !== "input"))
+            }
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            bounces={false}
+            style={styles.list}
+            contentContainerStyle={{ paddingBottom: 20 }}
           />
-          <View style={styles.listContainerWidth}>
-            <GestureHandlerRootView style={styles.listContainer}>
-              <DraggableFlatList
-                data={[...drillLifts, { id: "input", type: "input" }]}
-                onDragEnd={({ data }) =>
-                  setDrillLifts(data.filter((item) => item.type !== "input"))
-                }
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                bounces={false}
-                style={styles.list}
-              />
-            </GestureHandlerRootView>
-          </View>
-      </KeyboardAvoidingView>
-    //</View>
+        </GestureHandlerRootView>
+      </View>
+    </View>
   );
 }
 
 export default Workout;
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   container: {
     backgroundColor: Colors.SecondaryBlue,
     alignItems: "center",

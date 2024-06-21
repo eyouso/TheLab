@@ -21,8 +21,8 @@ function MainScreen() {
       </View>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.screen}>
-          <Workout />
-          <StatusBar style="auto" />
+            <Workout />
+            <StatusBar style="auto" />
         </SafeAreaView>
       </TouchableWithoutFeedback>
       <View>
@@ -39,6 +39,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     alignItems: "center",
+    //adjusted for bottom bar, will probably need to update
+    marginBottom: 30
   },
   container: {
     flex: 1,
