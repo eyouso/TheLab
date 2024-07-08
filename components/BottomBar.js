@@ -11,7 +11,7 @@ function BottomBar() {
                 <Text>Home</Text>
             </View>
             <View style={styles.menuBox}>
-                <Text>Settings</Text>
+                <Text>Library</Text>
             </View>
         </View>
     );
