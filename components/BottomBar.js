@@ -1,17 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
 import Colors from "../constants/colors";
+import { Ionicons } from "@expo/vector-icons";
 
 function BottomBar() {
     return (
         <View style={styles.container}>
             <View style={styles.menuBox}>
-                <Text>Profile</Text>
+                <Ionicons name = "person" size={48}/>
             </View>
             <View style={styles.menuBox}>
-                <Text>Home</Text>
+                <Ionicons name = "home" size={48}/>
             </View>
             <View style={styles.menuBox}>
-                <Text>Library</Text>
+                <Ionicons name = "library" size={48}/>
             </View>
         </View>
     );
