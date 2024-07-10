@@ -1,6 +1,6 @@
 import NavBar from "../components/NavBar";
-import BottomBar from "../components/BottomBar";
 import { View, Text, StyleSheet } from "react-native";
+import IDCard from "../components/IDCard";
 
 function ProfileScreen() {
 
@@ -10,7 +10,7 @@ function ProfileScreen() {
                 <NavBar />
             </View>
             <View>
-                <Text>Profile Screen</Text>
+                <IDCard />
             </View>
         </>
     );
