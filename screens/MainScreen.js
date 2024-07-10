@@ -25,9 +25,6 @@ function MainScreen() {
             <StatusBar style="auto" />
         </SafeAreaView>
       </TouchableWithoutFeedback>
-      <View>
-        <BottomBar />
-      </View>
     </>
   );
 }
@@ -39,8 +36,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     alignItems: "center",
-    //adjusted for bottom bar, will probably need to update
-    marginBottom: 100
   },
   container: {
     flex: 1,
