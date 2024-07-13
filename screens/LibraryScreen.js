@@ -1,66 +1,94 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import NavBar from "../components/NavBar";
 import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
 
 function LibraryScreen() {
-  const [myLibraryAlbums, setMyLibraryAlbums] = useState([{ id: 'add-button', type: 'button' }]);
-  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState([{ id: 'add-button', type: 'button' }]);
-  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState([{ id: 'add-button', type: 'button' }]);
+  const [myLibraryAlbums, setMyLibraryAlbums] = useState([
+    { id: "add-button", type: "button" },
+  ]);
+  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState([
+    { id: "add-button", type: "button" },
+  ]);
+  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState([
+    { id: "add-button", type: "button" },
+  ]);
 
   const addAlbum = (setAlbums) => {
-    const newAlbum = { id: String(Math.random()), type: 'album', title: "New Album" };
-    setAlbums(prevAlbums => [...prevAlbums.slice(0, -1), newAlbum, { id: 'add-button', type: 'button' }]);
+    const newAlbum = {
+      id: String(Math.random()),
+      type: "album",
+      title: "New Album",
+    };
+    setAlbums((prevAlbums) => [
+      ...prevAlbums.slice(0, -1),
+      newAlbum,
+      { id: "add-button", type: "button" },
+    ]);
   };
 
-  const renderItem = (setAlbums) => ({ item }) => {
-    if (item.type === 'button') {
-      return (
-        <PrimaryButton style={styles.addButton} onPress={() => addAlbum(setAlbums)}>
-          +
-        </PrimaryButton>
-      );
-    }
-    return <Album title={item.title} />;
-  };
+  const renderItem =
+    (setAlbums) =>
+    ({ item }) => {
+      if (item.type === "button") {
+        return (
+          <PrimaryButton
+            style={styles.addButton}
+            onPress={() => addAlbum(setAlbums)}
+          >
+            +
+          </PrimaryButton>
+        );
+      }
+      return <Album />;
+    };
 
   return (
-    <View style={styles.screen}>
-      <View>
-        <NavBar />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.screen}>
+        <View>
+          <NavBar />
+        </View>
+        <View style={styles.libraryContainer}>
+          <Text style={styles.libraryTitleText}>My Library</Text>
+          <FlatList
+            horizontal
+            data={myLibraryAlbums}
+            renderItem={renderItem(setMyLibraryAlbums)}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.albumList}
+          />
+        </View>
+        <View style={styles.libraryContainer}>
+          <Text style={styles.libraryTitleText}>Team Library</Text>
+          <FlatList
+            horizontal
+            data={teamLibraryAlbums}
+            renderItem={renderItem(setTeamLibraryAlbums)}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.albumList}
+          />
+        </View>
+        <View style={styles.libraryContainer}>
+          <Text style={styles.libraryTitleText}>Community Library</Text>
+          <FlatList
+            horizontal
+            data={communityLibraryAlbums}
+            renderItem={renderItem(setCommunityLibraryAlbums)}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.albumList}
+          />
+        </View>
       </View>
-      <View style={styles.libraryContainer}>
-        <Text style={styles.libraryTitleText}>My Library</Text>
-        <FlatList
-          horizontal
-          data={myLibraryAlbums}
-          renderItem={renderItem(setMyLibraryAlbums)}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.albumList}
-        />
-      </View>
-      <View style={styles.libraryContainer}>
-        <Text style={styles.libraryTitleText}>Team Library</Text>
-        <FlatList
-          horizontal
-          data={teamLibraryAlbums}
-          renderItem={renderItem(setTeamLibraryAlbums)}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.albumList}
-        />
-      </View>
-      <View style={styles.libraryContainer}>
-        <Text style={styles.libraryTitleText}>Community Library</Text>
-        <FlatList
-          horizontal
-          data={communityLibraryAlbums}
-          renderItem={renderItem(setCommunityLibraryAlbums)}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.albumList}
-        />
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

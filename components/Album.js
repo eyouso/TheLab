@@ -1,11 +1,19 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TextInput } from "react-native";
 
 function Album(props) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{props.title}</Text>
-    </View>
-  );
+    if(props.title) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>{props.title}</Text>
+            </View>
+        );
+    } else {
+        return (
+            <View style={styles.container}>
+                <TextInput style={styles.title} placeholder="New Album"/>
+            </View>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
