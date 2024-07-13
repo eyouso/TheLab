@@ -15,7 +15,7 @@ function BottomBar({ state, descriptors, navigation }) {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuBox}
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('The Lab')}
       >
         <Ionicons name="home" size={48} />
       </TouchableOpacity>

@@ -1,15 +1,17 @@
+import React from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { useRoute } from "@react-navigation/native";
 import Colors from "../constants/colors";
 
 function NavBar() {
+  const route = useRoute();
+  const routeName = route.name;
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.textContainer}>
         <View style={styles.textBox}>
-          <Text style={styles.text}>The Lab</Text>
-        </View>
-        <View style={styles.textBox}>
-            <Text style={styles.text}>Menu</Text>
+          <Text style={styles.text}>{routeName}</Text>
         </View>
       </SafeAreaView>
     </View>
@@ -37,5 +39,5 @@ const styles = StyleSheet.create({
     color: Colors.DarkGray,
     fontSize: 20,
     fontWeight: "bold",
-  }
+  },
 });
