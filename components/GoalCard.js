@@ -1,32 +1,67 @@
-import {View, Text, TextInput, StyleSheet} from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, TextInput, StyleSheet, Keyboard, } from "react-native";
 import Colors from "../constants/colors";
 
-function GoalCard(props) {
+function GoalCard({ goal, goalTitle, goalDescription, saveGoal }) {
+    const [title, setTitle] = useState(goalTitle);
+    const [description, setDescription] = useState(goalDescription);
+    const descriptionRef = useRef(null);
 
-    const goal = props.goal;
-    const goalTitle = props.goalTitle;
-    const goalDescription = props.goalDescription;
+    const handleTitleSubmit = () => {
+        descriptionRef.current.focus();
+    };
+
+    const handleDescriptionSubmit = () => {
+        if (saveGoal) {
+            saveGoal({ id: String(Math.random()), goal: "savedGoal", goalTitle: title, goalDescription: description });
+        }
+    };
+
+    const handleBlur = () => {
+        if (saveGoal) {
+            saveGoal({ id: String(Math.random()), goal: "savedGoal", goalTitle: title, goalDescription: description });
+        }
+    };
 
     if (goal === "teamGoal") {
-
-    return (
-        <View style={[styles.container, 
-            {backgroundColor: Colors.SecondaryBlue}
-        ]}>
-            <Text style={styles.goalTitle}>{goalTitle}</Text>
-            <Text style={styles.goalDescription}>{goalDescription}</Text>
-        </View>
-    );
-} else {
-    return (
-        <View style={[styles.container, 
-            {backgroundColor: Colors.EnergyGreen}
-        ]}>
-            <TextInput style={styles.goalTitle} placeholder="Goal Titile"/>
-            <TextInput style={styles.goalDescription} placeholder="Goal Description"/>
-        </View>
-    );
-}
+        return (
+            <View style={[styles.container, { backgroundColor: Colors.SecondaryBlue }]}>
+                <Text style={styles.goalTitle}>{title}</Text>
+                <Text style={styles.goalDescription}>{description}</Text>
+            </View>
+        );
+    } else if (goal === "newGoal") {
+        return (
+            <View style={[styles.container, { backgroundColor: Colors.EnergyGreen }]}>
+                <TextInput
+                    style={styles.goalTitle}
+                    placeholder="Goal Title"
+                    value={title}
+                    onChangeText={setTitle}
+                    returnKeyType="next"
+                    onSubmitEditing={handleTitleSubmit}
+                    autoFocus
+                />
+                <TextInput
+                    style={styles.goalDescription}
+                    placeholder="Goal Description"
+                    value={description}
+                    onChangeText={setDescription}
+                    ref={descriptionRef}
+                    returnKeyType="done"
+                    onSubmitEditing={handleDescriptionSubmit}
+                    onBlur={handleBlur}
+                />
+            </View>
+        );
+    } else {
+        return (
+            <View style={[styles.container, { backgroundColor: Colors.EnergyGreen }]}>
+                <Text style={styles.goalTitle}>{title}</Text>
+                <Text style={styles.goalDescription}>{description}</Text>
+            </View>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
@@ -37,7 +72,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         shadowColor: "black",
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: { width: 0, height: 2 },
         shadowRadius: 6,
         shadowOpacity: 0.25,
     },
