@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -8,26 +8,30 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import NavBar from '../components/NavBar';
-import Workout from '../components/Workout';
+  Button,
+  Text,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import NavBar from "../components/NavBar";
+import Workout from "../components/Workout";
+import Colors from "../constants/colors";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 function MainScreen() {
+  const [workouts, setWorkouts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
+      "keyboardDidShow",
       () => {
         setKeyboardVisible(true);
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
+      "keyboardDidHide",
       () => {
         setKeyboardVisible(false);
       }
@@ -45,13 +49,17 @@ function MainScreen() {
     setCurrentPage(pageIndex);
   };
 
+  const addWorkout = () => {
+    setWorkouts([...workouts, {}]);
+  };
+
   return (
     <View style={styles.container}>
       <NavBar />
       <SafeAreaView style={styles.screen}>
         <KeyboardAvoidingView
           style={styles.flexContainer}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <ScrollView
             horizontal
@@ -66,14 +74,25 @@ function MainScreen() {
             <View style={styles.page}>
               <Workout />
             </View>
+            {workouts.map((workout, index) => (
+              <View key={index} style={styles.page}>
+                <Workout />
+              </View>
+            ))}
             <View style={styles.page}>
-              {/* Blank Page */}
+              <View style={styles.promptView}>
+                <Button title="Add Workout" onPress={addWorkout} />
+              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
         <View style={styles.pagination}>
-          <View style={[styles.dot, currentPage === 0 && styles.activeDot]} />
-          <View style={[styles.dot, currentPage === 1 && styles.activeDot]} />
+          {[...Array(workouts.length + 2)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, currentPage === index && styles.activeDot]}
+            />
+          ))}
         </View>
         <StatusBar style="auto" />
       </SafeAreaView>
@@ -92,7 +111,7 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   scrollView: {
     flex: 1,
@@ -103,22 +122,26 @@ const styles = StyleSheet.create({
   page: {
     width: width,
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   pagination: {
-    flexDirection: 'row',
-    position: 'absolute',
+    flexDirection: "row",
+    position: "absolute",
     bottom: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   dot: {
     height: 10,
     width: 10,
-    backgroundColor: '#bbb',
+    backgroundColor: "#bbb",
     borderRadius: 5,
     margin: 5,
   },
   activeDot: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
+  },
+  promptView: {
+    margin: 20,
+    padding: 20,
   },
 });
