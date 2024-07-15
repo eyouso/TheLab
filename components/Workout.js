@@ -30,7 +30,7 @@ function Workout() {
   // Function to adjust the container height based on keyboard visibility and screen height
   const adjustContainerHeight = () => {
     const offset = Platform.OS === "ios" ? 125 : 0; // Offset for iOS
-    const maxContainerHeight = SCREEN_HEIGHT - 225; // Maximum container height // Will need to adjust based on device
+    const maxContainerHeight = SCREEN_HEIGHT - 275; // Maximum container height // Will need to adjust based on device
     const newHeight = SCREEN_HEIGHT - keyboardHeight - offset; // New container height based on keyboard
     const maxHeight = Math.min(newHeight, maxContainerHeight); // Ensure max height is capped
 
