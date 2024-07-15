@@ -10,12 +10,19 @@ import PrimaryButton from "../components/PrimaryButton";
 function ProfileScreen() {
     const route = useRoute();
     const [goals, setGoals] = useState([
-        { id: '1', goal: "teamGoal", goalTitle: "Weight Goal", goalDescription: "215lbs" }
+        { id: '1', goal: "teamGoal", goalTitle: "Weight Goal", goalDescription: "215lbs", createdAt: new Date().toISOString() }
     ]);
     const [newGoal, setNewGoal] = useState(null);
 
     const addGoal = () => {
-        setNewGoal({ id: String(goals.length + 1), goal: "newGoal", goalTitle: "", goalDescription: "", isEditing: true });
+        setNewGoal({
+            id: String(goals.length + 1),
+            goal: "newGoal",
+            goalTitle: "",
+            goalDescription: "",
+            isEditing: true,
+            createdAt: new Date().toISOString()
+        });
     };
 
     const saveGoal = (goal) => {
@@ -66,6 +73,7 @@ function ProfileScreen() {
                                 deleteGoal={() => deleteGoal(item.id)}
                                 expandGoal={() => expandGoal(item.id)}
                                 collapseGoal={() => collapseGoal(item.id)}
+                                createdAt={item.createdAt}
                             />
                         </View>
                     )}

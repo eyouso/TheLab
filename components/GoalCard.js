@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Colors from "../constants/colors";
 
-function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal }) {
+function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal, createdAt }) {
     const [title, setTitle] = useState(goalTitle);
     const [description, setDescription] = useState(goalDescription);
     const [isEditing, setIsEditing] = useState(initialIsEditing);
@@ -28,7 +28,13 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
         setIsEditing(false);
         setIsExpanded(false);
         if (saveGoal) {
-            saveGoal({ id: goal === "newGoal" ? "newGoal" : goal, goal: "savedGoal", goalTitle: title, goalDescription: description });
+            saveGoal({
+                id: goal === "newGoal" ? "newGoal" : goal,
+                goal: goal,
+                goalTitle: title,
+                goalDescription: description,
+                createdAt // Keep the createdAt property intact
+            });
         }
     };
 
@@ -46,6 +52,12 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
         deleteGoal();
     };
 
+    const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "2-digit",
+    });
+
     if (goal === "teamGoal") {
         return (
             <View style={[styles.container, { backgroundColor: Colors.SecondaryBlue }]}>
@@ -59,6 +71,12 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                 <View style={[styles.container, { backgroundColor: Colors.EnergyGreen }]}>
                     {isEditing || isExpanded ? (
                         <>
+                            {isExpanded && (
+                                <View style={styles.header}>
+                                    <Text style={styles.goalType}>{goal === "newGoal" ? "Personal Goal" : "Team Goal"}</Text>
+                                    <Text style={styles.goalDate}>{formattedDate}</Text>
+                                </View>
+                            )}
                             <TextInput
                                 style={styles.goalTitle}
                                 placeholder="Goal Title"
@@ -109,6 +127,19 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 6,
         shadowOpacity: 0.25,
+    },
+    header: {
+        justifyContent: "center",
+        width: "100%",
+        marginBottom: 10,
+        marginLeft: 30,
+    },
+    goalType: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    goalDate: {
+        fontSize: 16,
     },
     goalTitle: {
         fontSize: 20,
