@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Colors from "../constants/colors";
 
-function GoalCard({ goal, goalTitle, goalDescription, saveGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal }) {
+function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal }) {
     const [title, setTitle] = useState(goalTitle);
     const [description, setDescription] = useState(goalDescription);
     const [isEditing, setIsEditing] = useState(initialIsEditing);
@@ -42,6 +42,10 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, isEditing: initi
         collapseGoal();
     };
 
+    const handleDelete = () => {
+        deleteGoal();
+    };
+
     if (goal === "teamGoal") {
         return (
             <View style={[styles.container, { backgroundColor: Colors.SecondaryBlue }]}>
@@ -74,12 +78,12 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, isEditing: initi
                                 onBlur={handleBlur}
                             />
                             {isExpanded && (
-                                <Button title="Delete" onPress={() => {}} />
-                            )}
-                            {isExpanded && (
-                                <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
-                                    <Text style={styles.collapseButtonText}>X</Text>
-                                </TouchableOpacity>
+                                <>
+                                    <Button title="Delete" onPress={handleDelete} />
+                                    <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
+                                        <Text style={styles.collapseButtonText}>X</Text>
+                                    </TouchableOpacity>
+                                </>
                             )}
                         </>
                     ) : (

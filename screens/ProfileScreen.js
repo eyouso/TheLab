@@ -28,6 +28,10 @@ function ProfileScreen() {
         setNewGoal(null);
     };
 
+    const deleteGoal = (id) => {
+        setGoals(goals.filter(g => g.id !== id));
+    };
+
     const expandGoal = (id) => {
         setGoals(goals.map(g => g.id === id ? { ...g, isExpanded: true } : g));
     };
@@ -59,6 +63,7 @@ function ProfileScreen() {
                                 isEditing={item.isEditing}
                                 isExpanded={item.isExpanded}
                                 saveGoal={saveGoal}
+                                deleteGoal={() => deleteGoal(item.id)}
                                 expandGoal={() => expandGoal(item.id)}
                                 collapseGoal={() => collapseGoal(item.id)}
                             />
