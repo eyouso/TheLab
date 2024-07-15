@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Colors from "../constants/colors";
 
-function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal, createdAt }) {
+function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal, createdAt, creator }) {
     const [title, setTitle] = useState(goalTitle);
     const [description, setDescription] = useState(goalDescription);
     const [isEditing, setIsEditing] = useState(initialIsEditing);
@@ -33,7 +33,8 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                 goal: goal,
                 goalTitle: title,
                 goalDescription: description,
-                createdAt // Keep the createdAt property intact
+                createdAt,
+                creator
             });
         }
     };
@@ -58,62 +59,71 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
         year: "2-digit",
     });
 
-    if (goal === "teamGoal") {
-        return (
-            <View style={[styles.container, { backgroundColor: Colors.SecondaryBlue }]}>
-                <Text style={styles.goalTitle}>{title}</Text>
-                <Text style={styles.goalDescription}>{description}</Text>
+    return (
+        <TouchableOpacity onPress={handlePress} activeOpacity={1}>
+            <View style={[styles.container, { backgroundColor: goal === "teamGoal" ? Colors.SecondaryBlue : Colors.EnergyGreen }]}>
+                {isExpanded && goal === "teamGoal" ? (
+                    <>
+                        <View style={styles.header}>
+                            <Text style={styles.goalType}>Created by {creator}</Text>
+                            <Text style={styles.goalDate}>{formattedDate}</Text>
+                        </View>
+                        <Text style={styles.goalTitle}>{title}</Text>
+                        <Text style={styles.goalDescription}>{description}</Text>
+                        <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
+                            <Text style={styles.collapseButtonText}>X</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        {isEditing || isExpanded ? (
+                            <>
+                                {isExpanded && goal !== "teamGoal" && (
+                                    <View style={styles.header}>
+                                        <Text style={styles.goalType}>Created by you</Text>
+                                        <Text style={styles.goalDate}>{formattedDate}</Text>
+                                    </View>
+                                )}
+                                <TextInput
+                                    style={styles.goalTitle}
+                                    placeholder="Goal Title"
+                                    value={title}
+                                    onChangeText={setTitle}
+                                    returnKeyType="next"
+                                    onSubmitEditing={handleTitleSubmit}
+                                    autoFocus={initialIsEditing}
+                                />
+                                <TextInput
+                                    style={styles.goalDescription}
+                                    placeholder="Goal Description"
+                                    value={description}
+                                    onChangeText={setDescription}
+                                    ref={descriptionRef}
+                                    returnKeyType="done"
+                                    onBlur={handleBlur}
+                                />
+                                {isExpanded && (
+                                    <>
+                                        {goal !== "teamGoal" && (
+                                            <Button title="Delete" onPress={handleDelete} />
+                                        )}
+                                        <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
+                                            <Text style={styles.collapseButtonText}>X</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <Text style={styles.goalTitle}>{title}</Text>
+                                <Text style={styles.goalDescription}>{description}</Text>
+                            </>
+                        )}
+                    </>
+                )}
             </View>
-        );
-    } else {
-        return (
-            <TouchableOpacity onPress={handlePress} activeOpacity={1}>
-                <View style={[styles.container, { backgroundColor: Colors.EnergyGreen }]}>
-                    {isEditing || isExpanded ? (
-                        <>
-                            {isExpanded && (
-                                <View style={styles.header}>
-                                    <Text style={styles.goalType}>{goal === "newGoal" ? "Personal Goal" : "Team Goal"}</Text>
-                                    <Text style={styles.goalDate}>{formattedDate}</Text>
-                                </View>
-                            )}
-                            <TextInput
-                                style={styles.goalTitle}
-                                placeholder="Goal Title"
-                                value={title}
-                                onChangeText={setTitle}
-                                returnKeyType="next"
-                                onSubmitEditing={handleTitleSubmit}
-                                autoFocus={initialIsEditing}
-                            />
-                            <TextInput
-                                style={styles.goalDescription}
-                                placeholder="Goal Description"
-                                value={description}
-                                onChangeText={setDescription}
-                                ref={descriptionRef}
-                                returnKeyType="done"
-                                onBlur={handleBlur}
-                            />
-                            {isExpanded && (
-                                <>
-                                    <Button title="Delete" onPress={handleDelete} />
-                                    <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
-                                        <Text style={styles.collapseButtonText}>X</Text>
-                                    </TouchableOpacity>
-                                </>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.goalTitle}>{title}</Text>
-                            <Text style={styles.goalDescription}>{description}</Text>
-                        </>
-                    )}
-                </View>
-            </TouchableOpacity>
-        );
-    }
+        </TouchableOpacity>
+    );
 }
 
 const styles = StyleSheet.create({

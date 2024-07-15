@@ -10,7 +10,7 @@ import PrimaryButton from "../components/PrimaryButton";
 function ProfileScreen() {
     const route = useRoute();
     const [goals, setGoals] = useState([
-        { id: '1', goal: "teamGoal", goalTitle: "Weight Goal", goalDescription: "215lbs", createdAt: new Date().toISOString() }
+        { id: '1', goal: "teamGoal", goalTitle: "Weight Goal", goalDescription: "215lbs", createdAt: new Date().toISOString(), creator: "Coach Gianna" }
     ]);
     const [newGoal, setNewGoal] = useState(null);
 
@@ -21,7 +21,8 @@ function ProfileScreen() {
             goalTitle: "",
             goalDescription: "",
             isEditing: true,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            creator: "Ethan"
         });
     };
 
@@ -74,6 +75,7 @@ function ProfileScreen() {
                                 expandGoal={() => expandGoal(item.id)}
                                 collapseGoal={() => collapseGoal(item.id)}
                                 createdAt={item.createdAt}
+                                creator={item.creator}
                             />
                         </View>
                     )}
