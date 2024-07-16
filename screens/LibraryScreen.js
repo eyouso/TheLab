@@ -19,8 +19,10 @@ function LibraryScreen() {
   const [teamLibraryAlbums, setTeamLibraryAlbums] = useState([]);
   const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [albumToDelete, setAlbumToDelete] = useState(null);
   const [newAlbumTitle, setNewAlbumTitle] = useState("");
-  const [currentSetAlbums, setCurrentSetAlbums] = useState(() => {});
+  const [currentSetAlbums, setCurrentSetAlbums] = useState(() => setMyLibraryAlbums);
   const inputRef = useRef(null);
   const [enlargedAlbumId, setEnlargedAlbumId] = useState(null);
 
@@ -59,6 +61,17 @@ function LibraryScreen() {
     setEnlargedAlbumId(null);
   };
 
+  const handleDeletePress = (albumId) => {
+    setAlbumToDelete(albumId);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    currentSetAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
+    setDeleteModalVisible(false);
+    setAlbumToDelete(null);
+  };
+
   const renderItem =
     (setAlbums) =>
     ({ item }) => {
@@ -80,6 +93,7 @@ function LibraryScreen() {
           title={item.title}
           isEnlarged={enlargedAlbumId === item.id}
           onLongPress={() => handleAlbumLongPress(item.id)}
+          onDelete={() => handleDeletePress(item.id)}
         />
       );
     };
@@ -137,6 +151,19 @@ function LibraryScreen() {
             <Button title="Cancel" onPress={handleCancel} />
           </View>
         </Modal>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={deleteModalVisible}
+          onRequestClose={() => setDeleteModalVisible(false)}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Are you sure you want to delete this album?</Text>
+            <Button title="Delete" onPress={confirmDelete} />
+            <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
+          </View>
+        </Modal>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -150,6 +177,7 @@ const styles = StyleSheet.create({
   libraryContainer: {
     margin: 20,
     justifyContent: "center",
+    position: 'relative',
   },
   libraryTitleText: {
     fontSize: 20,
@@ -170,9 +198,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+      width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,

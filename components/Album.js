@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard } from "react-native";
+import Feather from 'react-native-vector-icons/Feather';
 
 const MAX_TITLE_LENGTH = 30; // Set your desired character limit here
 
 function Album(props) {
   const [title, setTitle] = useState(props.title || "");
-  const [isEditable, setIsEditable] = useState(!props.title);
+  const [isEditable, setIsEditable] = useState(!props.title || props.isEnlarged);
 
   const handleBlur = () => {
     if (title.trim()) {
@@ -13,39 +14,67 @@ function Album(props) {
     }
   };
 
+  const handleSubmitEditing = () => {
+    Keyboard.dismiss();
+  };
+
   return (
-    <TouchableOpacity
-      style={[styles.container, props.isEnlarged && styles.enlarged]}
-      onLongPress={props.onLongPress}
-      delayLongPress={500}
-      activeOpacity={1}
-    >
-      {isEditable ? (
-        <TextInput
-          style={[styles.title, props.isEnlarged && styles.enlargedTitle]}
-          placeholder="New Album"
-          value={title}
-          onChangeText={(text) => {
-            if (text.length <= MAX_TITLE_LENGTH) {
-              setTitle(text);
-            }
-          }}
-          onBlur={handleBlur}
-          onSubmitEditing={handleBlur}
-          autoFocus
-          maxLength={MAX_TITLE_LENGTH}
-          multiline
-        />
-      ) : (
-        <Text style={[styles.title, props.isEnlarged && styles.enlargedTitle]} numberOfLines={4} ellipsizeMode="tail">
-          {title}
-        </Text>
+    <View style={styles.wrapper}>
+      <TouchableOpacity
+        style={[styles.container, props.isEnlarged && styles.enlarged]}
+        onLongPress={props.onLongPress}
+        delayLongPress={500}
+        activeOpacity={1}
+      >
+        {props.isEnlarged ? (
+          <TextInput
+            style={[styles.title, props.isEnlarged && styles.enlargedTitle]}
+            placeholder="New Album"
+            value={title}
+            onChangeText={(text) => {
+              if (text.length <= MAX_TITLE_LENGTH) {
+                setTitle(text);
+              }
+            }}
+            onBlur={handleBlur}
+            onSubmitEditing={handleSubmitEditing}
+            editable={props.isEnlarged}
+            autoFocus={props.isEnlarged}
+            maxLength={MAX_TITLE_LENGTH}
+            returnKeyType="done"
+            blurOnSubmit
+            multiline
+          />
+        ) : (
+          <Text
+            style={[styles.title, props.isEnlarged && styles.enlargedTitle]}
+            numberOfLines={4}
+            ellipsizeMode="tail"
+            selectable={false} // Make text not highlightable
+          >
+            {title}
+          </Text>
+        )}
+      </TouchableOpacity>
+      {props.isEnlarged && (
+        <TouchableOpacity onPress={props.onDelete} style={styles.deleteButton}>
+          <Feather
+            name="x"
+            size={16}
+            color="white"
+            style={styles.deleteIcon}
+          />
+        </TouchableOpacity>
       )}
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'relative',
+    alignItems: 'center',
+  },
   container: {
     backgroundColor: "white",
     alignItems: "center",
@@ -64,6 +93,7 @@ const styles = StyleSheet.create({
   enlarged: {
     height: 120,
     width: 120,
+    zIndex: 1, // Ensure the enlarged album is above other elements
   },
   title: {
     fontSize: 16,
@@ -73,6 +103,21 @@ const styles = StyleSheet.create({
   },
   enlargedTitle: {
     fontSize: 20,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  deleteIcon: {
+    textAlign: 'center',
   },
 });
 
