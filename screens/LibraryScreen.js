@@ -22,6 +22,7 @@ function LibraryScreen() {
   const [newAlbumTitle, setNewAlbumTitle] = useState("");
   const [currentSetAlbums, setCurrentSetAlbums] = useState(() => {});
   const inputRef = useRef(null);
+  const [enlargedAlbumId, setEnlargedAlbumId] = useState(null);
 
   useEffect(() => {
     if (modalVisible && inputRef.current) {
@@ -50,6 +51,14 @@ function LibraryScreen() {
     setModalVisible(false);
   };
 
+  const handleAlbumLongPress = (id) => {
+    setEnlargedAlbumId(id);
+  };
+
+  const handleScreenPress = () => {
+    setEnlargedAlbumId(null);
+  };
+
   const renderItem =
     (setAlbums) =>
     ({ item }) => {
@@ -66,7 +75,13 @@ function LibraryScreen() {
           </PrimaryButton>
         );
       }
-      return <Album title={item.title} />;
+      return (
+        <Album
+          title={item.title}
+          isEnlarged={enlargedAlbumId === item.id}
+          onLongPress={() => handleAlbumLongPress(item.id)}
+        />
+      );
     };
 
   const renderAlbumList = (albums, setAlbums, showAddButton) => {
@@ -78,13 +93,13 @@ function LibraryScreen() {
         renderItem={renderItem(setAlbums)}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.albumList}
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false} // Hide the horizontal scroll indicator
       />
     );
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
       <View style={styles.screen}>
         <View>
           <NavBar />
@@ -142,7 +157,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   albumList: {
-    flexGrow: 1,  // Allow the list to grow and be scrollable
     alignItems: "center",
   },
   addButton: {

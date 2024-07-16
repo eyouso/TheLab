@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 const MAX_TITLE_LENGTH = 30; // Set your desired character limit here
 
@@ -10,15 +10,19 @@ function Album(props) {
   const handleBlur = () => {
     if (title.trim()) {
       setIsEditable(false);
-      Keyboard.dismiss();
     }
   };
 
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity
+      style={[styles.container, props.isEnlarged && styles.enlarged]}
+      onLongPress={props.onLongPress}
+      delayLongPress={500}
+      activeOpacity={1}
+    >
       {isEditable ? (
         <TextInput
-          style={styles.title}
+          style={[styles.title, props.isEnlarged && styles.enlargedTitle]}
           placeholder="New Album"
           value={title}
           onChangeText={(text) => {
@@ -33,7 +37,7 @@ function Album(props) {
           multiline
         />
       ) : (
-        <Text style={styles.title} numberOfLines={4} ellipsizeMode="tail">
+        <Text style={[styles.title, props.isEnlarged && styles.enlargedTitle]} numberOfLines={4} ellipsizeMode="tail">
           {title}
         </Text>
       )}
@@ -57,11 +61,18 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOpacity: 0.25,
   },
+  enlarged: {
+    height: 120,
+    width: 120,
+  },
   title: {
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     width: '100%', // Ensure the text wraps within the container
+  },
+  enlargedTitle: {
+    fontSize: 20,
   },
 });
 
