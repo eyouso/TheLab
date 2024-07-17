@@ -104,6 +104,11 @@ function Workout() {
     }
   }
 
+  function cancel() {
+    Keyboard.dismiss();
+    setDrillLiftName("");
+  }
+
   // Function to render each item in the DraggableFlatList
   const renderItem = ({ item, drag, isActive }) => (
     <TouchableOpacity
@@ -157,7 +162,7 @@ function Workout() {
           placeholder="Add a new drill or lift"
         />
         <View style={styles.buttonContainer}>
-          <Button title="Cancel" color={Colors.DarkGray}>Cancel</Button>
+          <Button title="Cancel" color={Colors.DarkGray} onPress={cancel}>Cancel</Button>
           <Button title = "Add" color={Colors.DarkGray} onPress={addDrillLift}>Add</Button>
         </View>
       </View>
