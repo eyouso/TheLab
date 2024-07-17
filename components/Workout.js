@@ -25,6 +25,7 @@ function Workout() {
   const [drillLifts, setDrillLifts] = useState([]);
   const [containerHeight, setContainerHeight] = useState(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [isInputVisible, setIsInputVisible] = useState(false); // State to manage visibility of inputAndButtonContainer
   const containerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -107,6 +108,7 @@ function Workout() {
   function cancel() {
     Keyboard.dismiss();
     setDrillLiftName("");
+    setIsInputVisible(false);
   }
 
   // Function to render each item in the DraggableFlatList
@@ -153,19 +155,28 @@ function Workout() {
       </GestureHandlerRootView>
 
       {/* Input and button to add new drills/lifts */}
-      <View style={styles.inputAndButtonContainer}>
-        <TextInput
-          onChangeText={setDrillLiftName}
-          value={drillLiftName}
-          autoCorrect={false}
-          style={styles.inputContainer}
-          placeholder="Add a new drill or lift"
-        />
-        <View style={styles.buttonContainer}>
-          <Button title="Cancel" color={Colors.DarkGray} onPress={cancel}>Cancel</Button>
-          <Button title = "Add" color={Colors.DarkGray} onPress={addDrillLift}>Add</Button>
+      {isInputVisible && (
+        <View style={styles.inputAndButtonContainer}>
+          <TextInput
+            onChangeText={setDrillLiftName}
+            value={drillLiftName}
+            autoCorrect={false}
+            style={styles.inputContainer}
+            placeholder="Add a new drill or lift"
+          />
+          <View style={styles.buttonContainer}>
+            <Button title="Cancel" color={Colors.DarkGray} onPress={cancel} />
+            <Button title="Add" color={Colors.DarkGray} onPress={addDrillLift} />
+          </View>
         </View>
-      </View>
+      )}
+
+      {/* Button to show the inputAndButtonContainer */}
+      {!isInputVisible && (
+        <View style={styles.addButtonContainer}>
+          <Button title="Add +" onPress={() => setIsInputVisible(true)} color={Colors.DarkGray} />
+        </View>
+      )}
     </View>
   );
 }
@@ -184,6 +195,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
+    position: 'relative', // Added to help position the add button
   },
   workoutTitleText: {
     color: Colors.DarkGray,
@@ -204,6 +216,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
+    marginTop: 10, // Added margin to separate from list
   },
   buttonContainer: {
     flexDirection: "row",
@@ -239,5 +252,10 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
+  },
+  addButtonContainer: {
+    marginTop: 0,
+    width: "100%", // Make the container take the full width
+    alignItems: "flex-end", // Align the button to the right
   },
 });
