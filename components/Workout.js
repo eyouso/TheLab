@@ -8,6 +8,7 @@ import {
   Keyboard,
   Dimensions,
   Platform,
+  Button
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -39,7 +40,7 @@ function Workout() {
         console.log("height: ", height);
         console.log("maxContainerHeight: ", maxContainerHeight);
         if (!isKeyboardVisible && height >= maxContainerHeight) {
-            console.log("Setting container height to maxContainerHeight");
+          console.log("Setting container height to maxContainerHeight");
           setContainerHeight(maxContainerHeight);
         } else if (height >= maxHeight - 25) {
           // Safety margin
@@ -77,7 +78,9 @@ function Workout() {
       () => {
         setContainerHeight(null);
         setIsKeyboardVisible(false);
-        console.log("calling adjustContainerHeight from keyboardDidHideListener");
+        console.log(
+          "calling adjustContainerHeight from keyboardDidHideListener"
+        );
         setTimeout(adjustContainerHeight, 0);
       }
     );
@@ -140,7 +143,7 @@ function Workout() {
           renderItem={renderItem}
           bounces={false}
           style={styles.list}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 10 }}
         />
       </GestureHandlerRootView>
 
@@ -153,7 +156,10 @@ function Workout() {
           style={styles.inputContainer}
           placeholder="Add a new drill or lift"
         />
-        <PrimaryButton onPress={addDrillLift}>+</PrimaryButton>
+        <View style={styles.buttonContainer}>
+          <Button title="Cancel" color={Colors.DarkGray}>Cancel</Button>
+          <Button title = "Add" color={Colors.DarkGray} onPress={addDrillLift}>Add</Button>
+        </View>
       </View>
     </View>
   );
@@ -185,20 +191,26 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   inputAndButtonContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
+    alignItems: "center",
     width: "100%",
-    paddingVertical: 10,
     borderRadius: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
   },
-  inputContainer: {
-    flex: 1,
-    backgroundColor: "white",
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "95%",
     alignItems: "center",
-    padding: 6,
+    marginTop: 5,
+  },
+  inputContainer: {
+    backgroundColor: "white",
+    width: "100%",
+    padding: 10,
     shadowColor: "black",
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
