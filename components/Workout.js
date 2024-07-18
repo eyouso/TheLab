@@ -13,7 +13,7 @@ import {
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Colors from "../constants/colors";
-import PrimaryButton from "./PrimaryButton";
+import DrillLift from "./DrillLift";
 
 // Get the screen height from the device dimensions
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -163,14 +163,7 @@ function Workout() {
       {/* Input and button to add new drills/lifts */}
       {isInputVisible && (
         <View style={styles.inputAndButtonContainer}>
-          <TextInput
-            onChangeText={setDrillLiftName}
-            value={drillLiftName}
-            autoCorrect={false}
-            style={styles.inputContainer}
-            placeholder="Add a new drill or lift"
-            maxLength={MAX_DRILL_LIFT_LENGTH}
-          />
+          <DrillLift value={drillLiftName} onChangeText={setDrillLiftName} />
           <View style={styles.buttonContainer}>
             <Button title="Cancel" color={Colors.DarkGray} onPress={cancel} />
             <Button title="Add" color={Colors.DarkGray} onPress={addDrillLift} />
