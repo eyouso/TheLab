@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#cce5ff",
   },
   itemText: {
-    fontSize: 16,
+    fontSize: 14,
   },
 });

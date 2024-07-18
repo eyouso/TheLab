@@ -1,36 +1,85 @@
-import React from 'react';
-import { TextInput, StyleSheet } from 'react-native';
+import React from "react";
+import { View, TextInput, StyleSheet, Text } from "react-native";
 
 // Maximum Characters for Drill/Lift Name
-const MAX_DRILL_LIFT_LENGTH = 50;
+const MAX_DRILL_LIFT_LENGTH = 30;
 
 function DrillLiftInput(props) {
   return (
-    <TextInput
-      placeholder="Add a New Drill or Lift"
-      value={props.value}
-      onChangeText={props.onChangeText}
-      style={styles.container}
-      autoCorrect={false}
-      maxLength={MAX_DRILL_LIFT_LENGTH}
-      returnKeyType="done"
-      onSubmitEditing={props.onSubmitEditing}
-      blurOnSubmit={false}
-    />
+    <View style={styles.inputContainer}>
+      <TextInput
+        placeholder="Add a new drill or lift"
+        value={props.value}
+        onChangeText={props.onChangeText}
+        style={[styles.inputItemContainer, { flex: 4, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }]}
+        autoCorrect={false}
+        maxLength={MAX_DRILL_LIFT_LENGTH}
+        returnKeyType="done"
+        onSubmitEditing={props.onSubmitEditing}
+        blurOnSubmit={false}
+      />
+      <View style={[styles.inputItemContainer, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}>
+        <Text style={styles.label}>Sets: </Text>
+        <TextInput
+          value={props.sets}
+          onChangeText={(text) => {
+            const numericValue = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            if (numericValue.length <= 2) {
+              props.onSetsChange(numericValue);
+            }
+          }}
+          style={styles.numberInput}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="X"
+        />
+      </View>
+      <View style={[styles.inputItemContainer, { flex: 1, borderTopRightRadius: 8, borderBottomRightRadius: 8 }]}>
+        <Text style={styles.label}>Reps: </Text>
+        <TextInput
+          value={props.reps}
+          onChangeText={(text) => {
+            const numericValue = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+            if (numericValue.length <= 2) {
+              props.onRepsChange(numericValue);
+            }
+          }}
+          style={styles.numberInput}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="X"
+        />
+      </View>
+    </View>
   );
 }
 
 export default DrillLiftInput;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    width: "100%",
-    padding: 10,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     shadowColor: "black",
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
-    borderRadius: 8,
+  },
+  inputItemContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  numberInput: {
+    flex: 1,
+    padding: 0,
+    margin: 0,
+    backgroundColor: "white",
+  },
+  label: {
+    marginRight: 5,
   },
 });
