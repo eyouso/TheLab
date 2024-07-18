@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useRef } from "react";
 import { View, TextInput, StyleSheet, Text } from "react-native";
 
 // Maximum Characters for Drill/Lift Name
-const MAX_DRILL_LIFT_LENGTH = 28;
+const MAX_DRILL_LIFT_LENGTH = 30;
 
 function DrillLiftInput(props) {
+  // Refs to manage focus between inputs
+  const setsInputRef = useRef(null);
+  const repsInputRef = useRef(null);
+
   return (
     <View style={styles.inputContainer}>
       <TextInput
@@ -14,13 +18,14 @@ function DrillLiftInput(props) {
         style={[styles.inputItemContainer, { flex: 4, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }]}
         autoCorrect={false}
         maxLength={MAX_DRILL_LIFT_LENGTH}
-        returnKeyType="done"
-        onSubmitEditing={props.onSubmitEditing}
+        returnKeyType="next"
+        onSubmitEditing={() => setsInputRef.current.focus()}
         blurOnSubmit={false}
       />
-      <View style={[styles.inputItemContainer, { flex: 1.5, marginRight: -20 }]}>
-        <Text style={styles.label}>Sets: </Text>
+      <View style={[styles.inputItemContainer, { flex: 1.5 }]}>
+        <Text style={styles.label}>Sets:</Text>
         <TextInput
+          ref={setsInputRef}
           value={props.sets}
           onChangeText={(text) => {
             const numericValue = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
@@ -32,11 +37,15 @@ function DrillLiftInput(props) {
           keyboardType="numeric"
           maxLength={2}
           placeholder="X"
+          returnKeyType="next"
+          onSubmitEditing={() => repsInputRef.current.focus()}
+          blurOnSubmit={false}
         />
       </View>
       <View style={[styles.inputItemContainer, { flex: 1.5, borderTopRightRadius: 8, borderBottomRightRadius: 8 }]}>
-        <Text style={styles.label}>Reps: </Text>
+        <Text style={styles.label}>Reps:</Text>
         <TextInput
+          ref={repsInputRef}
           value={props.reps}
           onChangeText={(text) => {
             const numericValue = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
@@ -48,6 +57,9 @@ function DrillLiftInput(props) {
           keyboardType="numeric"
           maxLength={2}
           placeholder="X"
+          returnKeyType="done"
+          onSubmitEditing={props.onSubmitEditing}
+          blurOnSubmit={false}
         />
       </View>
     </View>
@@ -78,6 +90,7 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
     backgroundColor: "white",
+    textAlign: "center", // Center align text to make it look better for two digits
   },
   label: {
     fontWeight: "bold",
