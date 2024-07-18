@@ -1,33 +1,33 @@
-import { View, Text, TextInput, StyleSheet } from "react-native";
-
-// Maximum Characters for Drill/Lift Name
-const MAX_DRILL_LIFT_LENGTH = 50;
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 function DrillLift(props) {
-
   return (
-      <TextInput
-        placeholder="Add a New Drill or Lift"
-        value={props.value}
-        onChangeText={props.onChangeText}
-        style={styles.container}
-        autoCorrect={false}
-        maxLength={MAX_DRILL_LIFT_LENGTH}
-      />
+    <TouchableOpacity
+      style={[styles.item, props.isActive && styles.activeItem]}
+      onLongPress={props.onLongPress}
+        delayLongPress={100}
+    >
+      <Text style={styles.itemText}>{props.value}</Text>
+    </TouchableOpacity>
   );
 }
 
 export default DrillLift;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    width: "100%",
+  item: {
+    flex: 1,
     padding: 10,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.25,
+    marginVertical: 5,
+    backgroundColor: "white",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  activeItem: {
+    backgroundColor: "#cce5ff",
+  },
+  itemText: {
+    fontSize: 16,
   },
 });

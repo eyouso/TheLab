@@ -8,11 +8,12 @@ import {
   Keyboard,
   Dimensions,
   Platform,
-  Button
+  Button,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Colors from "../constants/colors";
+import DrillLiftInput from "./DrillLiftInput";
 import DrillLift from "./DrillLift";
 
 // Get the screen height from the device dimensions
@@ -31,7 +32,6 @@ function Workout() {
 
   // Maximum Characters for Workout Title
   const MAX_WORKOUT_TITLE_LENGTH = 30;
-  const MAX_DRILL_LIFT_LENGTH = 50;
 
   // Function to adjust the container height based on keyboard visibility and screen height
   const adjustContainerHeight = () => {
@@ -117,13 +117,19 @@ function Workout() {
 
   // Function to render each item in the DraggableFlatList
   const renderItem = ({ item, drag, isActive }) => (
-    <TouchableOpacity
-      style={[styles.item, isActive && styles.activeItem]}
+    // <TouchableOpacity
+    //   style={[styles.item, isActive && styles.activeItem]}
+    //   onLongPress={drag}
+    //   delayLongPress={100}
+    // >
+    //   <Text style={styles.itemText}>{item.value}</Text>
+    // </TouchableOpacity>
+    <DrillLift
+      //key={item.id}
+      value={item.value}
       onLongPress={drag}
-      delayLongPress={100}
-    >
-      <Text style={styles.itemText}>{item.value}</Text>
-    </TouchableOpacity>
+      isActive={isActive}
+    />
   );
 
   // Render the main component
@@ -163,10 +169,17 @@ function Workout() {
       {/* Input and button to add new drills/lifts */}
       {isInputVisible && (
         <View style={styles.inputAndButtonContainer}>
-          <DrillLift value={drillLiftName} onChangeText={setDrillLiftName} />
+          <DrillLiftInput
+            value={drillLiftName}
+            onChangeText={setDrillLiftName}
+          />
           <View style={styles.buttonContainer}>
             <Button title="Cancel" color={Colors.DarkGray} onPress={cancel} />
-            <Button title="Add" color={Colors.DarkGray} onPress={addDrillLift} />
+            <Button
+              title="Add"
+              color={Colors.DarkGray}
+              onPress={addDrillLift}
+            />
           </View>
         </View>
       )}
@@ -174,7 +187,11 @@ function Workout() {
       {/* Button to show the inputAndButtonContainer */}
       {!isInputVisible && (
         <View style={styles.addButtonContainer}>
-          <Button title="Add +" onPress={() => setIsInputVisible(true)} color={Colors.DarkGray} />
+          <Button
+            title="Add +"
+            onPress={() => setIsInputVisible(true)}
+            color={Colors.DarkGray}
+          />
         </View>
       )}
     </View>
@@ -195,7 +212,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
-    position: 'relative', // Added to help position the add button
+    position: "relative", // Added to help position the add button
   },
   workoutTitleText: {
     color: Colors.DarkGray,
@@ -216,7 +233,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     shadowOpacity: 0.25,
-    marginTop: 10, // Added margin to separate from list
   },
   buttonContainer: {
     flexDirection: "row",
