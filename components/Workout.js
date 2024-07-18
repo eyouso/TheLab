@@ -117,15 +117,7 @@ function Workout() {
 
   // Function to render each item in the DraggableFlatList
   const renderItem = ({ item, drag, isActive }) => (
-    // <TouchableOpacity
-    //   style={[styles.item, isActive && styles.activeItem]}
-    //   onLongPress={drag}
-    //   delayLongPress={100}
-    // >
-    //   <Text style={styles.itemText}>{item.value}</Text>
-    // </TouchableOpacity>
     <DrillLift
-      //key={item.id}
       value={item.value}
       onLongPress={drag}
       isActive={isActive}
@@ -172,6 +164,7 @@ function Workout() {
           <DrillLiftInput
             value={drillLiftName}
             onChangeText={setDrillLiftName}
+            onSubmitEditing={addDrillLift} // Call addDrillLift when return key is pressed
           />
           <View style={styles.buttonContainer}>
             <Button title="Cancel" color={Colors.DarkGray} onPress={cancel} />
@@ -241,33 +234,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
   },
-  inputContainer: {
-    backgroundColor: "white",
-    width: "100%",
-    padding: 10,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.25,
-    borderRadius: 8,
-  },
   list: {
     width: "100%",
-  },
-  item: {
-    flex: 1,
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: "white",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  activeItem: {
-    backgroundColor: "#cce5ff",
-  },
-  itemText: {
-    fontSize: 16,
   },
   addButtonContainer: {
     marginTop: 0,
