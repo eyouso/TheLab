@@ -29,6 +29,9 @@ function Workout() {
   const containerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+  // Maximum Characters for Workout Title
+  const MAX_WORKOUT_TITLE_LENGTH = 30;
+
   // Function to adjust the container height based on keyboard visibility and screen height
   const adjustContainerHeight = () => {
     const offset = Platform.OS === "ios" ? 125 : 0; // Offset for iOS
@@ -137,6 +140,7 @@ function Workout() {
         onChangeText={setWorkoutTitle}
         value={workoutTitle}
         placeholder="New Workout"
+        maxLength={MAX_WORKOUT_TITLE_LENGTH}
       />
 
       {/* Container for the list of drills/lifts */}
@@ -151,6 +155,7 @@ function Workout() {
           bounces={false}
           style={styles.list}
           contentContainerStyle={{ paddingBottom: 10 }}
+          showsVerticalScrollIndicator={false}
         />
       </GestureHandlerRootView>
 
