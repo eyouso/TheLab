@@ -31,6 +31,7 @@ function Workout() {
 
   // Maximum Characters for Workout Title
   const MAX_WORKOUT_TITLE_LENGTH = 30;
+  const MAX_DRILL_LIFT_LENGTH = 50;
 
   // Function to adjust the container height based on keyboard visibility and screen height
   const adjustContainerHeight = () => {
@@ -168,6 +169,7 @@ function Workout() {
             autoCorrect={false}
             style={styles.inputContainer}
             placeholder="Add a new drill or lift"
+            maxLength={MAX_DRILL_LIFT_LENGTH}
           />
           <View style={styles.buttonContainer}>
             <Button title="Cancel" color={Colors.DarkGray} onPress={cancel} />
