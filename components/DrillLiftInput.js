@@ -2,7 +2,7 @@ import React from "react";
 import { View, TextInput, StyleSheet, Text } from "react-native";
 
 // Maximum Characters for Drill/Lift Name
-const MAX_DRILL_LIFT_LENGTH = 30;
+const MAX_DRILL_LIFT_LENGTH = 28;
 
 function DrillLiftInput(props) {
   return (
