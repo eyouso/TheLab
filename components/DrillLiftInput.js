@@ -18,7 +18,7 @@ function DrillLiftInput(props) {
         onSubmitEditing={props.onSubmitEditing}
         blurOnSubmit={false}
       />
-      <View style={[styles.inputItemContainer, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}>
+      <View style={[styles.inputItemContainer, { flex: 1.5, marginRight: -20 }]}>
         <Text style={styles.label}>Sets: </Text>
         <TextInput
           value={props.sets}
@@ -34,7 +34,7 @@ function DrillLiftInput(props) {
           placeholder="X"
         />
       </View>
-      <View style={[styles.inputItemContainer, { flex: 1, borderTopRightRadius: 8, borderBottomRightRadius: 8 }]}>
+      <View style={[styles.inputItemContainer, { flex: 1.5, borderTopRightRadius: 8, borderBottomRightRadius: 8 }]}>
         <Text style={styles.label}>Reps: </Text>
         <TextInput
           value={props.reps}
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   label: {
-    marginRight: 5,
+    fontWeight: "bold",
   },
 });
