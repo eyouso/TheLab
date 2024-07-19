@@ -37,7 +37,7 @@ function DrillLiftInput(props) {
           keyboardType="numeric"
           maxLength={2}
           placeholder="X"
-          returnKeyType="next"
+          returnKeyType="done"
           onSubmitEditing={() => repsInputRef.current.focus()}
           blurOnSubmit={false}
         />
