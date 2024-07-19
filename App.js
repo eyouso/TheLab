@@ -14,9 +14,13 @@ const Stack = createStackNavigator();
 
 function MainStack() {
   return (
-    <Stack.Navigator initialRouteName="MainScreen" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainScreen" component={MainScreen} />
-      <Stack.Screen name="DrillLiftDetail" component={DrillLiftDetailScreen} />
+    <Stack.Navigator>
+      <Stack.Screen
+        name="The Lab"
+        component={MainScreen}
+        options={{ headerTitle: 'The Lab', headerShown: false }}
+      />
+      <Stack.Screen name="DrillLiftDetail" component={DrillLiftDetailScreen} options={{headerTitle: 'Details', headerShown: false}}/>
     </Stack.Navigator>
   );
 }
@@ -31,7 +35,7 @@ export default function App() {
           }}
           tabBar={(props) => <BottomBar {...props} />}
         >
-          <Tab.Screen name="The Lab" component={MainStack} />
+          <Tab.Screen name="MainScreen" component={MainStack} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
         </Tab.Navigator>
