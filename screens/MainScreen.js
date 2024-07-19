@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// MainScreen.js
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,13 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Button,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
-import NavBar from "../components/NavBar";
-import Workout from "../components/Workout";
-import Colors from "../constants/colors";
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import NavBar from '../components/NavBar';
+import Workout from '../components/Workout';
+import Colors from '../constants/colors';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
 function MainScreen({ navigation }) {
   const [workouts, setWorkouts] = useState([]);
@@ -24,13 +25,13 @@ function MainScreen({ navigation }) {
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
+      'keyboardDidShow',
       () => {
         setKeyboardVisible(true);
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
+      'keyboardDidHide',
       () => {
         setKeyboardVisible(false);
       }
@@ -58,7 +59,7 @@ function MainScreen({ navigation }) {
       <SafeAreaView style={styles.screen}>
         <KeyboardAvoidingView
           style={styles.flexContainer}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
             horizontal
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: 'white',
   },
   scrollView: {
     flex: 1,
@@ -121,23 +122,23 @@ const styles = StyleSheet.create({
   page: {
     width: width,
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
   },
   pagination: {
-    flexDirection: "row",
-    position: "absolute",
+    flexDirection: 'row',
+    position: 'absolute',
     bottom: 10,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   dot: {
     height: 10,
     width: 10,
-    backgroundColor: "#bbb",
+    backgroundColor: '#bbb',
     borderRadius: 5,
     margin: 5,
   },
   activeDot: {
-    backgroundColor: "#007AFF",
+    backgroundColor: '#007AFF',
   },
   promptView: {
     margin: 20,

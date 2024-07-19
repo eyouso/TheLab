@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+// DrillLiftDetailScreen.js
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TextInput, Button } from 'react-native';
+import { DrillLiftContext } from '../context/DrillLiftContext';
 
 function DrillLiftDetailScreen({ route, navigation }) {
-  const { drillLift, updateDrillLiftName } = route.params;
+  const { drillLiftId } = route.params;
+  const { drillLifts, updateDrillLiftName } = useContext(DrillLiftContext);
+  const drillLift = drillLifts.find(d => d.id === drillLiftId);
   const [title, setTitle] = useState(drillLift.value);
 
   const handleSave = () => {

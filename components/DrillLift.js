@@ -1,3 +1,4 @@
+// DrillLift.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -7,10 +8,7 @@ function DrillLift(props) {
       style={[styles.item, props.isActive && styles.activeItem]}
       onPress={() =>
         props.navigation.navigate('DrillLiftDetail', {
-          drillLift: {
-            ...props,
-          },
-          updateDrillLiftName: props.updateDrillLiftName,
+          drillLiftId: props.id,
         })
       }
       onLongPress={props.onLongPress}

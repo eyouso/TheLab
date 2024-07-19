@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+// Workout.js
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   View,
   TextInput,
@@ -14,13 +15,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Colors from '../constants/colors';
 import DrillLiftInput from './DrillLiftInput';
 import DrillLift from './DrillLift';
+import { DrillLiftContext } from '../context/DrillLiftContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 function Workout({ navigation }) {
+  const { drillLifts, setDrillLifts } = useContext(DrillLiftContext);
   const [workoutTitle, setWorkoutTitle] = useState('');
   const [drillLiftName, setDrillLiftName] = useState('');
-  const [drillLifts, setDrillLifts] = useState([]);
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
   const [containerHeight, setContainerHeight] = useState(null);
@@ -110,14 +112,6 @@ function Workout({ navigation }) {
     setIsInputVisible(false);
   }
 
-  const updateDrillLiftName = (id, newName) => {
-    setDrillLifts((currentDrillLifts) =>
-      currentDrillLifts.map((drillLift) =>
-        drillLift.id === id ? { ...drillLift, value: newName } : drillLift
-      )
-    );
-  };
-
   const renderItem = ({ item, drag, isActive }) => (
     <DrillLift
       value={item.value}
@@ -131,7 +125,6 @@ function Workout({ navigation }) {
       isActive={isActive}
       navigation={navigation}
       id={item.id}
-      updateDrillLiftName={updateDrillLiftName}
     />
   );
 
