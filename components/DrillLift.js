@@ -2,50 +2,34 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 function DrillLift(props) {
-  const {
-    value,
-    sets,
-    reps,
-    description,
-    instructions,
-    videoUrl,
-    notes,
-    navigation,
-  } = props;
-
   return (
     <TouchableOpacity
       style={[styles.item, props.isActive && styles.activeItem]}
       onPress={() =>
-        navigation.navigate('DrillLiftDetail', {
+        props.navigation.navigate('DrillLiftDetail', {
           drillLift: {
-            value,
-            sets,
-            reps,
-            description,
-            instructions,
-            videoUrl,
-            notes,
+            ...props,
           },
+          updateDrillLiftName: props.updateDrillLiftName,
         })
       }
       onLongPress={props.onLongPress}
       delayLongPress={100}
     >
       <View style={styles.contentContainer}>
-        <Text style={styles.itemText}>{value}</Text>
-        {(sets || reps) && (
+        <Text style={styles.itemText}>{props.value}</Text>
+        {(props.sets || props.reps) && (
           <View style={styles.setsRepsContainer}>
-            {sets && (
+            {props.sets && (
               <View style={styles.setsRepsItem}>
                 <Text style={styles.label}>Sets:</Text>
-                <Text style={styles.numberInput}>{sets}</Text>
+                <Text style={styles.numberInput}>{props.sets}</Text>
               </View>
             )}
-            {reps && (
+            {props.reps && (
               <View style={styles.setsRepsItem}>
                 <Text style={styles.label}>Reps:</Text>
-                <Text style={styles.numberInput}>{reps}</Text>
+                <Text style={styles.numberInput}>{props.reps}</Text>
               </View>
             )}
           </View>

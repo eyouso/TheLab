@@ -1,16 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, TextInput, Button } from 'react-native';
 
 function DrillLiftDetailScreen({ route, navigation }) {
-  const { drillLift } = route.params;
+  const { drillLift, updateDrillLiftName } = route.params;
+  const [title, setTitle] = useState(drillLift.value);
+
+  const handleSave = () => {
+    updateDrillLiftName(drillLift.id, title);
+    navigation.goBack();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Button title="Cancel" onPress={() => navigation.goBack()} />
+        <Button title="Save" onPress={handleSave} />
       </View>
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>{drillLift.value}</Text>
+        <TextInput
+          style={styles.titleInput}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Title"
+        />
         <Text style={styles.label}>Description:</Text>
         <Text style={styles.content}>{drillLift.description}</Text>
         <Text style={styles.label}>Instructions:</Text>
@@ -32,7 +44,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
@@ -41,10 +53,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
   },
-  title: {
+  titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderColor: 'gray',
   },
   label: {
     fontSize: 18,

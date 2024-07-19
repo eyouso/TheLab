@@ -110,6 +110,14 @@ function Workout({ navigation }) {
     setIsInputVisible(false);
   }
 
+  const updateDrillLiftName = (id, newName) => {
+    setDrillLifts((currentDrillLifts) =>
+      currentDrillLifts.map((drillLift) =>
+        drillLift.id === id ? { ...drillLift, value: newName } : drillLift
+      )
+    );
+  };
+
   const renderItem = ({ item, drag, isActive }) => (
     <DrillLift
       value={item.value}
@@ -122,6 +130,8 @@ function Workout({ navigation }) {
       onLongPress={drag}
       isActive={isActive}
       navigation={navigation}
+      id={item.id}
+      updateDrillLiftName={updateDrillLiftName}
     />
   );
 
