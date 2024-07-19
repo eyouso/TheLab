@@ -1,26 +1,51 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 function DrillLift(props) {
+  const {
+    value,
+    sets,
+    reps,
+    description,
+    instructions,
+    videoUrl,
+    notes,
+    navigation,
+  } = props;
+
   return (
     <TouchableOpacity
       style={[styles.item, props.isActive && styles.activeItem]}
+      onPress={() =>
+        navigation.navigate('DrillLiftDetail', {
+          drillLift: {
+            value,
+            sets,
+            reps,
+            description,
+            instructions,
+            videoUrl,
+            notes,
+          },
+        })
+      }
       onLongPress={props.onLongPress}
       delayLongPress={100}
     >
       <View style={styles.contentContainer}>
-        <Text style={styles.itemText}>{props.value}</Text>
-        {(props.sets || props.reps) && (
+        <Text style={styles.itemText}>{value}</Text>
+        {(sets || reps) && (
           <View style={styles.setsRepsContainer}>
-            {props.sets && (
+            {sets && (
               <View style={styles.setsRepsItem}>
                 <Text style={styles.label}>Sets:</Text>
-                <Text style={styles.numberInput}>{props.sets}</Text>
+                <Text style={styles.numberInput}>{sets}</Text>
               </View>
             )}
-            {props.reps && (
+            {reps && (
               <View style={styles.setsRepsItem}>
                 <Text style={styles.label}>Reps:</Text>
-                <Text style={styles.numberInput}>{props.reps}</Text>
+                <Text style={styles.numberInput}>{reps}</Text>
               </View>
             )}
           </View>
@@ -37,37 +62,37 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     marginVertical: 5,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
   },
   activeItem: {
-    backgroundColor: "#cce5ff",
+    backgroundColor: '#cce5ff',
   },
   contentContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   itemText: {
     fontSize: 14,
     flex: 1,
   },
   setsRepsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   setsRepsItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: 10,
   },
   label: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   numberInput: {
     marginLeft: 5,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

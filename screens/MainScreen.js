@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Button,
-  Text,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import NavBar from "../components/NavBar";
@@ -18,7 +17,7 @@ import Colors from "../constants/colors";
 
 const { width } = Dimensions.get("window");
 
-function MainScreen() {
+function MainScreen({ navigation }) {
   const [workouts, setWorkouts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -72,11 +71,11 @@ function MainScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.page}>
-              <Workout />
+              <Workout navigation={navigation} />
             </View>
             {workouts.map((workout, index) => (
               <View key={index} style={styles.page}>
-                <Workout />
+                <Workout navigation={navigation} />
               </View>
             ))}
             <View style={styles.page}>
