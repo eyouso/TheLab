@@ -16,7 +16,6 @@ import Colors from "../constants/colors";
 import DrillLiftInput from "./DrillLiftInput";
 import DrillLift from "./DrillLift";
 
-// Get the screen height from the device dimensions
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 function Workout() {
@@ -104,7 +103,7 @@ function Workout() {
   }
 
   const renderItem = ({ item, drag, isActive }) => (
-    <DrillLift value={item.value} onLongPress={drag} isActive={isActive} />
+    <DrillLift value={item.value} sets={item.sets} reps={item.reps} onLongPress={drag} isActive={isActive} />
   );
 
   return (
