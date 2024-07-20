@@ -1,52 +1,65 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, Button, Modal, TouchableOpacity, Keyboard } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { DrillLiftContext } from '../context/DrillLiftContext';
+import React, { useState, useContext, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TextInput,
+  Button,
+  Modal,
+  TouchableOpacity,
+  Keyboard,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { DrillLiftContext } from "../context/DrillLiftContext";
 
 function DrillLiftDetailScreen({ route, navigation }) {
   const { drillLiftId } = route.params;
-  const { drillLifts, updateDrillLift, deleteDrillLift } = useContext(DrillLiftContext);
-  const drillLift = drillLifts.find(d => d.id === drillLiftId);
-  const [title, setTitle] = useState('');
-  const [sets, setSets] = useState('');
-  const [reps, setReps] = useState('');
-  const [description, setDescription] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [notes, setNotes] = useState('');
+  const { drillLifts, updateDrillLift, deleteDrillLift } =
+    useContext(DrillLiftContext);
+  const drillLift = drillLifts.find((d) => d.id === drillLiftId);
+  const [title, setTitle] = useState("");
+  const [sets, setSets] = useState("");
+  const [reps, setReps] = useState("");
+  const [description, setDescription] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [notes, setNotes] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+
+  const MAX_DRILL_LIFT_LENGTH = 30;
 
   useEffect(() => {
     if (drillLift) {
-      setTitle(drillLift.value || '');
-      setSets(drillLift.sets || '');
-      setReps(drillLift.reps || '');
-      setDescription(drillLift.description || '');
-      setInstructions(drillLift.instructions || '');
-      setNotes(drillLift.notes || '');
+      setTitle(drillLift.value || "");
+      setSets(drillLift.sets || "");
+      setReps(drillLift.reps || "");
+      setDescription(drillLift.description || "");
+      setInstructions(drillLift.instructions || "");
+      setNotes(drillLift.notes || "");
     } else {
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
-        navigation.navigate('MainScreen');
+        navigation.navigate("MainScreen");
       }
     }
   }, [drillLift, navigation]);
 
   const handleSave = () => {
     if (drillLift) {
-      updateDrillLift(drillLift.id, { 
-        value: title, 
-        sets, 
-        reps, 
-        description, 
-        instructions, 
-        notes 
+      updateDrillLift(drillLift.id, {
+        value: title,
+        sets,
+        reps,
+        description,
+        instructions,
+        notes,
       });
     }
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate('MainScreen');
+      navigation.navigate("MainScreen");
     }
   };
 
@@ -56,7 +69,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate('MainScreen');
+      navigation.navigate("MainScreen");
     }
   };
 
@@ -67,21 +80,24 @@ function DrillLiftDetailScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Button title="Cancel" onPress={() => {
-          if (navigation.canGoBack()) {
-            navigation.goBack();
-          } else {
-            navigation.navigate('MainScreen');
-          }
-        }} />
+        <Button
+          title="Cancel"
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate("MainScreen");
+            }
+          }}
+        />
         <Button title="Save" onPress={handleSave} />
       </View>
-      <KeyboardAwareScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.scrollViewContent} 
+      <KeyboardAwareScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
         enableOnAndroid={true}
-        extraScrollHeight={75}  // Adjust this value as needed
+        extraScrollHeight={-100} // Adjust this value as needed
       >
         <TextInput
           style={styles.titleInput}
@@ -91,6 +107,8 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
+          maxLength={MAX_DRILL_LIFT_LENGTH}
         />
         <Text style={styles.label}>Sets:</Text>
         <TextInput
@@ -102,6 +120,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
         />
         <Text style={styles.label}>Reps:</Text>
         <TextInput
@@ -113,6 +132,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
         />
         <Text style={styles.label}>Description:</Text>
         <TextInput
@@ -124,6 +144,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
         />
         <Text style={styles.label}>Instructions:</Text>
         <TextInput
@@ -135,6 +156,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
         />
         <Text style={styles.label}>Notes:</Text>
         <TextInput
@@ -146,10 +168,15 @@ function DrillLiftDetailScreen({ route, navigation }) {
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
+          scrollEnabled={false}
         />
       </KeyboardAwareScrollView>
       <View style={styles.deleteButtonContainer}>
-        <Button title="Delete" color="red" onPress={() => setModalVisible(true)} />
+        <Button
+          title="Delete"
+          color="red"
+          onPress={() => setModalVisible(true)}
+        />
       </View>
       <Modal
         animationType="slide"
@@ -161,10 +188,16 @@ function DrillLiftDetailScreen({ route, navigation }) {
           <View style={styles.modalContent}>
             <Text>Are you sure you want to delete this?</Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.modalButton} onPress={handleDelete}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleDelete}
+              >
                 <Text style={styles.modalButtonText}>Yes</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.modalButtonText}>No</Text>
               </TouchableOpacity>
             </View>
@@ -180,69 +213,69 @@ export default DrillLiftDetailScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   scrollViewContent: {
-    paddingBottom: 20,
+    //paddingBottom: 20,
   },
   titleInput: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
     borderBottomWidth: 1,
-    borderColor: 'gray',
+    borderColor: "gray",
   },
   label: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 20,
   },
   content: {
     fontSize: 16,
     marginTop: 10,
     borderBottomWidth: 1,
-    borderColor: 'gray',
+    borderColor: "gray",
   },
   deleteButtonContainer: {
     padding: 20,
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
     width: 300,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 20,
   },
   modalButton: {
     marginHorizontal: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     borderRadius: 5,
   },
   modalButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
 });
