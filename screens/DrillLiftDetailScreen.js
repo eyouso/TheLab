@@ -1,19 +1,29 @@
-// DrillLiftDetailScreen.js
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TextInput, Button, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, Button, Modal, TouchableOpacity, Keyboard } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { DrillLiftContext } from '../context/DrillLiftContext';
 
 function DrillLiftDetailScreen({ route, navigation }) {
   const { drillLiftId } = route.params;
   const { drillLifts, updateDrillLift, deleteDrillLift } = useContext(DrillLiftContext);
   const drillLift = drillLifts.find(d => d.id === drillLiftId);
-  const [title, setTitle] = useState(drillLift?.value || '');
-  const [sets, setSets] = useState(drillLift?.sets || '');
-  const [reps, setReps] = useState(drillLift?.reps || '');
+  const [title, setTitle] = useState('');
+  const [sets, setSets] = useState('');
+  const [reps, setReps] = useState('');
+  const [description, setDescription] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [notes, setNotes] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    if (!drillLift) {
+    if (drillLift) {
+      setTitle(drillLift.value || '');
+      setSets(drillLift.sets || '');
+      setReps(drillLift.reps || '');
+      setDescription(drillLift.description || '');
+      setInstructions(drillLift.instructions || '');
+      setNotes(drillLift.notes || '');
+    } else {
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
@@ -24,7 +34,14 @@ function DrillLiftDetailScreen({ route, navigation }) {
 
   const handleSave = () => {
     if (drillLift) {
-      updateDrillLift(drillLift.id, { value: title, sets, reps });
+      updateDrillLift(drillLift.id, { 
+        value: title, 
+        sets, 
+        reps, 
+        description, 
+        instructions, 
+        notes 
+      });
     }
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -59,35 +76,78 @@ function DrillLiftDetailScreen({ route, navigation }) {
         }} />
         <Button title="Save" onPress={handleSave} />
       </View>
-      <ScrollView style={styles.container}>
+      <KeyboardAwareScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollViewContent} 
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={75}  // Adjust this value as needed
+      >
         <TextInput
           style={styles.titleInput}
           value={title}
           onChangeText={setTitle}
           placeholder="Title"
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
         />
         <Text style={styles.label}>Sets:</Text>
         <TextInput
           style={styles.content}
           value={sets}
           onChangeText={setSets}
+          placeholder="X"
           keyboardType="numeric"
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
         />
         <Text style={styles.label}>Reps:</Text>
         <TextInput
           style={styles.content}
           value={reps}
           onChangeText={setReps}
+          placeholder="X"
           keyboardType="numeric"
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
         />
         <Text style={styles.label}>Description:</Text>
-        <Text style={styles.content}>{drillLift.description}</Text>
+        <TextInput
+          style={styles.content}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Description"
+          multiline
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
+        />
         <Text style={styles.label}>Instructions:</Text>
-        <Text style={styles.content}>{drillLift.instructions}</Text>
+        <TextInput
+          style={styles.content}
+          value={instructions}
+          onChangeText={setInstructions}
+          placeholder="Instructions"
+          multiline
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
+        />
         <Text style={styles.label}>Notes:</Text>
-        <Text style={styles.content}>{drillLift.notes}</Text>
-        {/* You can add a video player here if needed */}
-      </ScrollView>
+        <TextInput
+          style={styles.content}
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Notes"
+          multiline
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          blurOnSubmit={true}
+        />
+      </KeyboardAwareScrollView>
       <View style={styles.deleteButtonContainer}>
         <Button title="Delete" color="red" onPress={() => setModalVisible(true)} />
       </View>
@@ -133,6 +193,9 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
   },
+  scrollViewContent: {
+    paddingBottom: 20,
+  },
   titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -148,6 +211,8 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 16,
     marginTop: 10,
+    borderBottomWidth: 1,
+    borderColor: 'gray',
   },
   deleteButtonContainer: {
     padding: 20,

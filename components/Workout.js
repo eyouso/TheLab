@@ -93,10 +93,10 @@ function Workout({ navigation }) {
           value: drillLiftName,
           sets,
           reps,
-          description: 'A default description',
-          instructions: 'Default instructions on how to perform the drill/lift.',
-          videoUrl: 'http://example.com/default-video',
-          notes: 'Default notes.',
+          description: '',
+          instructions: '',
+          videoUrl: '',
+          notes: '',
         },
       ]);
       setDrillLiftName('');
