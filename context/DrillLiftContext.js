@@ -14,8 +14,12 @@ export const DrillLiftProvider = ({ children }) => {
     );
   };
 
+  const deleteDrillLift = (id) => {
+    setDrillLifts((currentDrillLifts) => currentDrillLifts.filter(drillLift => drillLift.id !== id));
+  };
+
   return (
-    <DrillLiftContext.Provider value={{ drillLifts, setDrillLifts, updateDrillLift }}>
+    <DrillLiftContext.Provider value={{ drillLifts, setDrillLifts, updateDrillLift, deleteDrillLift }}>
       {children}
     </DrillLiftContext.Provider>
   );
