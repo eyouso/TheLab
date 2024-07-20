@@ -5,12 +5,14 @@ import { DrillLiftContext } from '../context/DrillLiftContext';
 
 function DrillLiftDetailScreen({ route, navigation }) {
   const { drillLiftId } = route.params;
-  const { drillLifts, updateDrillLiftName } = useContext(DrillLiftContext);
+  const { drillLifts, updateDrillLift } = useContext(DrillLiftContext);
   const drillLift = drillLifts.find(d => d.id === drillLiftId);
   const [title, setTitle] = useState(drillLift.value);
+  const [sets, setSets] = useState(drillLift.sets);
+  const [reps, setReps] = useState(drillLift.reps);
 
   const handleSave = () => {
-    updateDrillLiftName(drillLift.id, title);
+    updateDrillLift(drillLift.id, { value: title, sets, reps });
     navigation.goBack();
   };
 
@@ -26,6 +28,20 @@ function DrillLiftDetailScreen({ route, navigation }) {
           value={title}
           onChangeText={setTitle}
           placeholder="Title"
+        />
+        <Text style={styles.label}>Sets:</Text>
+        <TextInput
+          style={styles.content}
+          value={sets}
+          onChangeText={setSets}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Reps:</Text>
+        <TextInput
+          style={styles.content}
+          value={reps}
+          onChangeText={setReps}
+          keyboardType="numeric"
         />
         <Text style={styles.label}>Description:</Text>
         <Text style={styles.content}>{drillLift.description}</Text>

@@ -6,16 +6,16 @@ export const DrillLiftContext = createContext();
 export const DrillLiftProvider = ({ children }) => {
   const [drillLifts, setDrillLifts] = useState([]);
 
-  const updateDrillLiftName = (id, newName) => {
+  const updateDrillLift = (id, newDetails) => {
     setDrillLifts((currentDrillLifts) =>
       currentDrillLifts.map((drillLift) =>
-        drillLift.id === id ? { ...drillLift, value: newName } : drillLift
+        drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
       )
     );
   };
 
   return (
-    <DrillLiftContext.Provider value={{ drillLifts, setDrillLifts, updateDrillLiftName }}>
+    <DrillLiftContext.Provider value={{ drillLifts, setDrillLifts, updateDrillLift }}>
       {children}
     </DrillLiftContext.Provider>
   );

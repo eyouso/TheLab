@@ -20,7 +20,7 @@ import { DrillLiftContext } from '../context/DrillLiftContext';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 function Workout({ navigation }) {
-  const { drillLifts, setDrillLifts } = useContext(DrillLiftContext);
+  const { drillLifts, setDrillLifts, updateDrillLift } = useContext(DrillLiftContext);
   const [workoutTitle, setWorkoutTitle] = useState('');
   const [drillLiftName, setDrillLiftName] = useState('');
   const [sets, setSets] = useState('');
@@ -112,6 +112,14 @@ function Workout({ navigation }) {
     setIsInputVisible(false);
   }
 
+  const updateDrillLiftDetails = (id, newDetails) => {
+    setDrillLifts((currentDrillLifts) =>
+      currentDrillLifts.map((drillLift) =>
+        drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
+      )
+    );
+  };
+
   const renderItem = ({ item, drag, isActive }) => (
     <DrillLift
       value={item.value}
@@ -125,6 +133,7 @@ function Workout({ navigation }) {
       isActive={isActive}
       navigation={navigation}
       id={item.id}
+      updateDrillLiftDetails={updateDrillLiftDetails}
     />
   );
 
