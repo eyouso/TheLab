@@ -14,10 +14,26 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { DrillLiftContext } from "../context/DrillLiftContext";
 
 function DrillLiftDetailScreen({ route, navigation }) {
-  const { drillLiftId } = route.params;
-  const { drillLifts, updateDrillLift, deleteDrillLift } =
-    useContext(DrillLiftContext);
+  // For debugging purposes, log the route params
+  useEffect(() => {
+    console.log('DrillLiftDetailScreen route params:', route.params);
+  }, [route]);
+
+  const { drillLiftId, workoutId } = route.params || {}; // Get the workoutId parameter
+  const { drillLiftsByWorkout, updateDrillLift, deleteDrillLift } = useContext(DrillLiftContext);
+
+  useEffect(() => {
+    console.log('drillLiftsByWorkout:', drillLiftsByWorkout);
+  }, [drillLiftsByWorkout]);
+
+  const drillLifts = drillLiftsByWorkout[workoutId] || [];
   const drillLift = drillLifts.find((d) => d.id === drillLiftId);
+
+  useEffect(() => {
+    console.log('drillLifts:', drillLifts);
+    console.log('drillLift:', drillLift);
+  }, [drillLifts, drillLift]);
+
   const [title, setTitle] = useState("");
   const [sets, setSets] = useState("");
   const [reps, setReps] = useState("");
@@ -47,7 +63,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
 
   const handleSave = () => {
     if (drillLift) {
-      updateDrillLift(drillLift.id, {
+      updateDrillLift(workoutId, drillLift.id, {
         value: title,
         sets,
         reps,
@@ -65,7 +81,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
 
   const handleDelete = () => {
     setModalVisible(false);
-    deleteDrillLift(drillLiftId);
+    deleteDrillLift(workoutId, drillLiftId);
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
@@ -74,7 +90,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
   };
 
   if (!drillLift) {
-    return null; // or return a loading spinner
+    return <View><Text>Loading...</Text></View>; // or return a loading spinner
   }
 
   return (

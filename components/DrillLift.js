@@ -1,16 +1,22 @@
-// DrillLift.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 function DrillLift(props) {
+  const handlePress = () => {
+    console.log('Navigating to DrillLiftDetail with:', {
+      drillLiftId: props.id,
+      workoutId: props.workoutId,
+    }); // Debug log
+    props.navigation.navigate('DrillLiftDetail', {
+      drillLiftId: props.id,
+      workoutId: props.workoutId,
+    });
+  };
+
   return (
     <TouchableOpacity
       style={[styles.item, props.isActive && styles.activeItem]}
-      onPress={() =>
-        props.navigation.navigate('DrillLiftDetail', {
-          drillLiftId: props.id,
-        })
-      }
+      onPress={handlePress} // Use the handlePress function
       onLongPress={props.onLongPress}
       delayLongPress={100}
     >

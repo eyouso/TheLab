@@ -1,4 +1,3 @@
-// Workout.js
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   View,
@@ -19,9 +18,10 @@ import { DrillLiftContext } from '../context/DrillLiftContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function Workout({ navigation }) {
-  const { drillLifts, setDrillLifts, updateDrillLift } = useContext(DrillLiftContext);
-  const [workoutTitle, setWorkoutTitle] = useState('');
+function Workout({ navigation, workout }) {
+  const { addDrillLiftToWorkout, updateDrillLiftsByWorkout } = useContext(DrillLiftContext);
+  const [drillLifts, setDrillLifts] = useState(workout.drillLifts || []);
+  const [workoutTitle, setWorkoutTitle] = useState(workout.title || 'New Workout');
   const [drillLiftName, setDrillLiftName] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -84,33 +84,35 @@ function Workout({ navigation }) {
     };
   }, []);
 
-  function addDrillLift() {
+  const addDrillLift = () => {
     if (drillLiftName.trim()) {
+      const newDrillLift = {
+        id: Math.random().toString(),
+        value: drillLiftName,
+        sets,
+        reps,
+        description: '',
+        instructions: '',
+        videoUrl: '',
+        notes: '',
+      };
       setDrillLifts((currentDrillLifts) => [
         ...currentDrillLifts,
-        {
-          id: Math.random().toString(),
-          value: drillLiftName,
-          sets,
-          reps,
-          description: '',
-          instructions: '',
-          videoUrl: '',
-          notes: '',
-        },
+        newDrillLift,
       ]);
+      addDrillLiftToWorkout(workout.id, newDrillLift); // Update context
       setDrillLiftName('');
       setSets('');
       setReps('');
       setTimeout(adjustContainerHeight, 0);
     }
-  }
+  };
 
-  function cancel() {
+  const cancel = () => {
     Keyboard.dismiss();
     setDrillLiftName('');
     setIsInputVisible(false);
-  }
+  };
 
   const updateDrillLiftDetails = (id, newDetails) => {
     setDrillLifts((currentDrillLifts) =>
@@ -131,8 +133,9 @@ function Workout({ navigation }) {
       notes={item.notes}
       onLongPress={drag}
       isActive={isActive}
-      navigation={navigation}
+      navigation={navigation} // Ensure navigation is passed here
       id={item.id}
+      workoutId={workout.id} // Pass workoutId to DrillLift
       updateDrillLiftDetails={updateDrillLiftDetails}
     />
   );

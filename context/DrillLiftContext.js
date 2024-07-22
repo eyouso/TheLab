@@ -1,25 +1,43 @@
-// DrillLiftContext.js
 import React, { createContext, useState } from 'react';
 
 export const DrillLiftContext = createContext();
 
 export const DrillLiftProvider = ({ children }) => {
-  const [drillLifts, setDrillLifts] = useState([]);
+  const [drillLiftsByWorkout, setDrillLiftsByWorkout] = useState({});
 
-  const updateDrillLift = (id, newDetails) => {
-    setDrillLifts((currentDrillLifts) =>
-      currentDrillLifts.map((drillLift) =>
-        drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
-      )
-    );
+  const addDrillLiftToWorkout = (workoutId, drillLift) => {
+    setDrillLiftsByWorkout((current) => ({
+      ...current,
+      [workoutId]: current[workoutId] ? [...current[workoutId], drillLift] : [drillLift],
+    }));
   };
 
-  const deleteDrillLift = (id) => {
-    setDrillLifts((currentDrillLifts) => currentDrillLifts.filter(drillLift => drillLift.id !== id));
+  const updateDrillLift = (workoutId, drillLiftId, newDetails) => {
+    setDrillLiftsByWorkout((current) => ({
+      ...current,
+      [workoutId]: current[workoutId].map((drillLift) =>
+        drillLift.id === drillLiftId ? { ...drillLift, ...newDetails } : drillLift
+      ),
+    }));
+  };
+
+  const deleteDrillLift = (workoutId, drillLiftId) => {
+    setDrillLiftsByWorkout((current) => ({
+      ...current,
+      [workoutId]: current[workoutId].filter((drillLift) => drillLift.id !== drillLiftId),
+    }));
   };
 
   return (
-    <DrillLiftContext.Provider value={{ drillLifts, setDrillLifts, updateDrillLift, deleteDrillLift }}>
+    <DrillLiftContext.Provider
+      value={{
+        drillLiftsByWorkout,
+        setDrillLiftsByWorkout,
+        addDrillLiftToWorkout,
+        updateDrillLift,
+        deleteDrillLift,
+      }}
+    >
       {children}
     </DrillLiftContext.Provider>
   );

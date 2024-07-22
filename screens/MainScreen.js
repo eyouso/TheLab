@@ -1,4 +1,3 @@
-// MainScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -19,7 +18,7 @@ import Colors from '../constants/colors';
 const { width } = Dimensions.get('window');
 
 function MainScreen({ navigation }) {
-  const [workouts, setWorkouts] = useState([]);
+  const [workouts, setWorkouts] = useState([{ id: 0, title: '', drillLifts: [] }]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -50,7 +49,22 @@ function MainScreen({ navigation }) {
   };
 
   const addWorkout = () => {
-    setWorkouts([...workouts, {}]);
+    const newWorkout = {
+      id: workouts.length,
+      title: '',
+      drillLifts: [],
+    };
+    setWorkouts([...workouts, newWorkout]);
+  };
+
+  const updateDrillLifts = (workoutId, newDrillLifts) => {
+    setWorkouts((prevWorkouts) =>
+      prevWorkouts.map((workout) =>
+        workout.id === workoutId
+          ? { ...workout, drillLifts: newDrillLifts }
+          : workout
+      )
+    );
   };
 
   return (
@@ -71,12 +85,13 @@ function MainScreen({ navigation }) {
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.page}>
-              <Workout navigation={navigation} />
-            </View>
-            {workouts.map((workout, index) => (
-              <View key={index} style={styles.page}>
-                <Workout navigation={navigation} />
+            {workouts.map((workout) => (
+              <View key={workout.id} style={styles.page}>
+                <Workout
+                  navigation={navigation}
+                  workout={workout}
+                  updateDrillLifts={updateDrillLifts}
+                />
               </View>
             ))}
             <View style={styles.page}>
@@ -87,7 +102,7 @@ function MainScreen({ navigation }) {
           </ScrollView>
         </KeyboardAvoidingView>
         <View style={styles.pagination}>
-          {[...Array(workouts.length + 2)].map((_, index) => (
+          {[...Array(workouts.length + 1)].map((_, index) => (
             <View
               key={index}
               style={[styles.dot, currentPage === index && styles.activeDot]}
