@@ -14,50 +14,25 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { DrillLiftContext } from "../context/DrillLiftContext";
 
 function DrillLiftDetailScreen({ route, navigation }) {
-  // For debugging purposes, log the route params
-  useEffect(() => {
-    console.log('DrillLiftDetailScreen route params:', route.params);
-  }, [route]);
-
-  const { drillLiftId, workoutId } = route.params || {}; // Get the workoutId parameter
+  const { drillLiftId, workoutId } = route.params || {};
   const { drillLiftsByWorkout, updateDrillLift, deleteDrillLift } = useContext(DrillLiftContext);
 
-  useEffect(() => {
-    console.log('drillLiftsByWorkout:', drillLiftsByWorkout);
-  }, [drillLiftsByWorkout]);
-
-  const drillLifts = drillLiftsByWorkout[workoutId] || [];
+  const drillLifts = drillLiftsByWorkout?.[workoutId] || [];
   const drillLift = drillLifts.find((d) => d.id === drillLiftId);
 
-  useEffect(() => {
-    console.log('drillLifts:', drillLifts);
-    console.log('drillLift:', drillLift);
-  }, [drillLifts, drillLift]);
-
-  const [title, setTitle] = useState("");
-  const [sets, setSets] = useState("");
-  const [reps, setReps] = useState("");
-  const [description, setDescription] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [notes, setNotes] = useState("");
+  const [title, setTitle] = useState(drillLift ? drillLift.value : "");
+  const [sets, setSets] = useState(drillLift ? drillLift.sets : "");
+  const [reps, setReps] = useState(drillLift ? drillLift.reps : "");
+  const [description, setDescription] = useState(drillLift ? drillLift.description : "");
+  const [instructions, setInstructions] = useState(drillLift ? drillLift.instructions : "");
+  const [notes, setNotes] = useState(drillLift ? drillLift.notes : "");
   const [modalVisible, setModalVisible] = useState(false);
 
   const MAX_DRILL_LIFT_LENGTH = 30;
 
   useEffect(() => {
-    if (drillLift) {
-      setTitle(drillLift.value || "");
-      setSets(drillLift.sets || "");
-      setReps(drillLift.reps || "");
-      setDescription(drillLift.description || "");
-      setInstructions(drillLift.instructions || "");
-      setNotes(drillLift.notes || "");
-    } else {
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      } else {
-        navigation.navigate("MainScreen");
-      }
+    if (!drillLift && navigation.canGoBack()) {
+      navigation.goBack();
     }
   }, [drillLift, navigation]);
 
@@ -137,6 +112,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
           scrollEnabled={false}
+          maxLength={2}
         />
         <Text style={styles.label}>Reps:</Text>
         <TextInput
@@ -149,6 +125,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
           scrollEnabled={false}
+          maxLength={2}
         />
         <Text style={styles.label}>Description:</Text>
         <TextInput
@@ -161,6 +138,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
           scrollEnabled={false}
+          maxLength={100}
         />
         <Text style={styles.label}>Instructions:</Text>
         <TextInput
@@ -173,6 +151,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
           scrollEnabled={false}
+          maxLength={100}
         />
         <Text style={styles.label}>Notes:</Text>
         <TextInput
@@ -185,6 +164,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
           onSubmitEditing={Keyboard.dismiss}
           blurOnSubmit={true}
           scrollEnabled={false}
+          maxLength={100}
         />
       </KeyboardAwareScrollView>
       <View style={styles.deleteButtonContainer}>

@@ -3,7 +3,6 @@ import {
   View,
   TextInput,
   StyleSheet,
-  Text,
   Keyboard,
   Dimensions,
   Platform,
@@ -19,9 +18,9 @@ import { DrillLiftContext } from '../context/DrillLiftContext';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 function Workout({ navigation, workout }) {
-  const { addDrillLiftToWorkout, updateDrillLiftsByWorkout } = useContext(DrillLiftContext);
-  const [drillLifts, setDrillLifts] = useState(workout.drillLifts || []);
-  const [workoutTitle, setWorkoutTitle] = useState(workout.title || 'New Workout');
+  const { drillLiftsByWorkout, addDrillLiftToWorkout, updateDrillLift } = useContext(DrillLiftContext);
+  const [drillLifts, setDrillLifts] = useState(drillLiftsByWorkout[workout.id] || []);
+  const [workoutTitle, setWorkoutTitle] = useState(''); // Initialize with empty string
   const [drillLiftName, setDrillLiftName] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -84,6 +83,10 @@ function Workout({ navigation, workout }) {
     };
   }, []);
 
+  useEffect(() => {
+    setDrillLifts(drillLiftsByWorkout[workout.id] || []);
+  }, [drillLiftsByWorkout, workout.id]);
+
   const addDrillLift = () => {
     if (drillLiftName.trim()) {
       const newDrillLift = {
@@ -115,11 +118,7 @@ function Workout({ navigation, workout }) {
   };
 
   const updateDrillLiftDetails = (id, newDetails) => {
-    setDrillLifts((currentDrillLifts) =>
-      currentDrillLifts.map((drillLift) =>
-        drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
-      )
-    );
+    updateDrillLift(workout.id, id, newDetails); // Update context
   };
 
   const renderItem = ({ item, drag, isActive }) => (
@@ -152,7 +151,7 @@ function Workout({ navigation, workout }) {
         style={styles.workoutTitleText}
         onChangeText={setWorkoutTitle}
         value={workoutTitle}
-        placeholder="New Workout"
+        placeholder="New Workout" // Use placeholder
         maxLength={MAX_WORKOUT_TITLE_LENGTH}
       />
 
