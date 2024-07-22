@@ -13,11 +13,12 @@ import {
 import NavBar from "../components/NavBar";
 import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
+import dummyAlbums from '../data/dummyAlbums.json'; // Import the dummy data
 
 function LibraryScreen() {
-  const [myLibraryAlbums, setMyLibraryAlbums] = useState([]);
-  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState([]);
-  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState([]);
+  const [myLibraryAlbums, setMyLibraryAlbums] = useState(dummyAlbums.myLibraryAlbums);
+  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState(dummyAlbums.teamLibraryAlbums);
+  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState(dummyAlbums.communityLibraryAlbums);
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [albumToDelete, setAlbumToDelete] = useState(null);
@@ -73,7 +74,7 @@ function LibraryScreen() {
   };
 
   const renderItem =
-    (setAlbums) =>
+    (setAlbums, expandable) =>
     ({ item }) => {
       if (item.type === "button") {
         return (
@@ -92,19 +93,20 @@ function LibraryScreen() {
         <Album
           title={item.title}
           isEnlarged={enlargedAlbumId === item.id}
-          onLongPress={() => handleAlbumLongPress(item.id)}
-          onDelete={() => handleDeletePress(item.id)}
+          onLongPress={expandable ? () => handleAlbumLongPress(item.id) : null}
+          onDelete={expandable ? () => handleDeletePress(item.id) : null}
+          expandable={expandable}
         />
       );
     };
 
-  const renderAlbumList = (albums, setAlbums, showAddButton) => {
+  const renderAlbumList = (albums, setAlbums, showAddButton, expandable) => {
     const data = showAddButton ? [...albums, { id: "add-button", type: "button" }] : albums;
     return (
       <FlatList
         horizontal
         data={data}
-        renderItem={renderItem(setAlbums)}
+        renderItem={renderItem(setAlbums, expandable)}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.albumList}
         showsHorizontalScrollIndicator={false} // Hide the horizontal scroll indicator
@@ -120,15 +122,15 @@ function LibraryScreen() {
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>My Library</Text>
-          {renderAlbumList(myLibraryAlbums, setMyLibraryAlbums, true)}
+          {renderAlbumList(myLibraryAlbums, setMyLibraryAlbums, true, true)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Team Library</Text>
-          {renderAlbumList(teamLibraryAlbums, setTeamLibraryAlbums, false)}
+          {renderAlbumList(teamLibraryAlbums, setTeamLibraryAlbums, false, false)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Community Library</Text>
-          {renderAlbumList(communityLibraryAlbums, setCommunityLibraryAlbums, false)}
+          {renderAlbumList(communityLibraryAlbums, setCommunityLibraryAlbums, false, false)}
         </View>
 
         <Modal
