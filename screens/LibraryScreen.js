@@ -15,7 +15,7 @@ import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
 import dummyAlbums from '../data/dummyAlbums.json'; // Import the dummy data
 
-function LibraryScreen() {
+function LibraryScreen({ navigation }) {
   const [myLibraryAlbums, setMyLibraryAlbums] = useState(dummyAlbums.myLibraryAlbums);
   const [teamLibraryAlbums, setTeamLibraryAlbums] = useState(dummyAlbums.teamLibraryAlbums);
   const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState(dummyAlbums.communityLibraryAlbums);
@@ -39,6 +39,7 @@ function LibraryScreen() {
         id: String(Math.random()),
         type: "album",
         title: newAlbumTitle,
+        contents: [], // Initialize contents array
       };
       currentSetAlbums((prevAlbums) => [
         ...prevAlbums,
@@ -73,6 +74,11 @@ function LibraryScreen() {
     setAlbumToDelete(null);
   };
 
+  const handleAlbumPress = (album) => {
+    console.log("Navigating to AlbumContentScreen with album:", album);
+    navigation.navigate("AlbumContent", { album });
+  };
+
   const renderItem =
     (setAlbums, expandable) =>
     ({ item }) => {
@@ -93,6 +99,7 @@ function LibraryScreen() {
         <Album
           title={item.title}
           isEnlarged={enlargedAlbumId === item.id}
+          onPress={() => handleAlbumPress(item)}
           onLongPress={expandable ? () => handleAlbumLongPress(item.id) : null}
           onDelete={expandable ? () => handleDeletePress(item.id) : null}
           expandable={expandable}

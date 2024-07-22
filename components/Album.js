@@ -22,6 +22,7 @@ function Album(props) {
     <View style={styles.wrapper}>
       <TouchableOpacity
         style={[styles.container, props.isEnlarged && styles.enlarged]}
+        onPress={props.onPress} // Handle tap event
         onLongPress={props.expandable ? props.onLongPress : null}
         delayLongPress={500}
         activeOpacity={1}
