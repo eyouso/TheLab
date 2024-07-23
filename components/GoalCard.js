@@ -29,7 +29,7 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
         setIsExpanded(false);
         if (saveGoal) {
             saveGoal({
-                id: goal === "newGoal" ? "newGoal" : goal,
+                id: goal,
                 goal: goal,
                 goalTitle: title,
                 goalDescription: description,

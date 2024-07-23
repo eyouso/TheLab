@@ -6,20 +6,24 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Modal,
+  Button,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import NavBar from "../components/NavBar";
 import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
-import PrimaryButton from "../components/PrimaryButton";
+import AddGoalModal from "../components/AddGoalModal"; // Import the new modal
 import dummyProfileData from "../data/dummyProfileData.json";
 import dummyGoalData from "../data/dummyGoalData.json";
 
 function ProfileScreen() {
   const route = useRoute();
   const [goals, setGoals] = useState([]);
-  const [newGoal, setNewGoal] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState(null);
 
   useEffect(() => {
     // Set initial goals from dummy data
@@ -28,38 +32,35 @@ function ProfileScreen() {
 
   const { name, class: className, team, position, height } = dummyProfileData;
 
-  const addGoal = () => {
-    setNewGoal({
-      id: String(goals.length + 1),
-      goal: "newGoal",
-      goalTitle: "",
-      goalDescription: "",
-      isEditing: true,
-      createdAt: new Date().toISOString(),
-      creator: "",
-    });
+  const addGoal = (newGoal) => {
+    setGoals((prevGoals) => [...prevGoals, newGoal]);
   };
 
   const saveGoal = (goal) => {
-    if (goal.id === "newGoal") {
-      goal.id = String(goals.length + 1);
-      setGoals([...goals, goal]);
-    } else {
-      setGoals(goals.map((g) => (g.id === goal.id ? goal : g)));
-    }
-    setNewGoal(null);
+    setGoals((prevGoals) => prevGoals.map((g) => (g.id === goal.id ? goal : g)));
   };
 
   const deleteGoal = (id) => {
-    setGoals(goals.filter((g) => g.id !== id));
+    setGoals((prevGoals) => prevGoals.filter((g) => g.id !== id));
   };
 
   const expandGoal = (id) => {
-    setGoals(goals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));
+    setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));
   };
 
   const collapseGoal = (id) => {
-    setGoals(goals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g)));
+    setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g)));
+  };
+
+  const handleDeletePress = (goalId) => {
+    setGoalToDelete(goalId);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    deleteGoal(goalToDelete);
+    setDeleteModalVisible(false);
+    setGoalToDelete(null);
   };
 
   return (
@@ -75,7 +76,7 @@ function ProfileScreen() {
           inches={height.inches}
         />
         <KeyboardAwareFlatList
-          data={newGoal ? [...goals, newGoal] : goals}
+          data={goals}
           renderItem={({ item }) => (
             <View style={styles.goalCardContainer}>
               <GoalCard
@@ -85,7 +86,7 @@ function ProfileScreen() {
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
                 saveGoal={saveGoal}
-                deleteGoal={() => deleteGoal(item.id)}
+                deleteGoal={() => handleDeletePress(item.id)}
                 expandGoal={() => expandGoal(item.id)}
                 collapseGoal={() => collapseGoal(item.id)}
                 createdAt={item.createdAt}
@@ -98,12 +99,28 @@ function ProfileScreen() {
           enableOnAndroid={true}
           ListFooterComponent={
             <View style={styles.addGoalView}>
-              <Text style={styles.bodyText}>Add Goal</Text>
-              <PrimaryButton onPress={addGoal}>+</PrimaryButton>
+              <Button title="Add Goal" onPress={() => setIsModalVisible(true)}>Add Goal</Button>
             </View>
           }
           contentContainerStyle={styles.flatListContent}
         />
+        <AddGoalModal
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onAdd={addGoal}
+        />
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={deleteModalVisible}
+          onRequestClose={() => setDeleteModalVisible(false)}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Are you sure you want to delete this goal?</Text>
+            <Button title="Delete" onPress={confirmDelete} />
+            <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
+          </View>
+        </Modal>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -123,12 +140,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 10,
   },
-  bodyText: {
-    fontSize: 18,
-    margin: 10,
-  },
   flatListContent: {
     paddingBottom: 20, // Adjust this value to add space at the bottom
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    position: 'absolute',
+    bottom: '50%', // Adjust this value to lower the modal
+    left: '10%',
+    right: '10%',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 
