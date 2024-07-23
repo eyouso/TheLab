@@ -82,7 +82,6 @@ function ProfileScreen() {
               <GoalCard
                 goal={item.goal}
                 goalTitle={item.goalTitle}
-                goalDescription={item.goalDescription}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
                 saveGoal={saveGoal}

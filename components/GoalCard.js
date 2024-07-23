@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Button, Keyboard } from "react-native";
 import Colors from "../constants/colors";
 
-function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal, createdAt, creator }) {
+function GoalCard({ goal, goalTitle, saveGoal, deleteGoal, isEditing: initialIsEditing, isExpanded: initialIsExpanded, expandGoal, collapseGoal, createdAt, creator }) {
     const [title, setTitle] = useState(goalTitle);
-    const [description, setDescription] = useState(goalDescription);
     const [isEditing, setIsEditing] = useState(initialIsEditing);
     const [isExpanded, setIsExpanded] = useState(initialIsExpanded);
-    const descriptionRef = useRef(null);
 
     useEffect(() => {
         if (initialIsEditing) {
@@ -32,7 +30,6 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                 id: goal,
                 goal: goal,
                 goalTitle: title,
-                goalDescription: description,
                 createdAt,
                 creator
             });
@@ -40,7 +37,7 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
     };
 
     const handleTitleSubmit = () => {
-        descriptionRef.current.focus();
+        Keyboard.dismiss();
     };
 
     const handleCollapse = () => {
@@ -69,7 +66,6 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                             <Text style={styles.goalDate}>{formattedDate}</Text>
                         </View>
                         <Text style={styles.goalTitle}>{title}</Text>
-                        <Text style={styles.goalDescription}>{description}</Text>
                         <TouchableOpacity onPress={handleCollapse} style={styles.collapseButton}>
                             <Text style={styles.collapseButtonText}>X</Text>
                         </TouchableOpacity>
@@ -89,18 +85,11 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                                     placeholder="Goal Title"
                                     value={title}
                                     onChangeText={setTitle}
-                                    returnKeyType="next"
+                                    returnKeyType="done"
                                     onSubmitEditing={handleTitleSubmit}
                                     autoFocus={initialIsEditing}
-                                />
-                                <TextInput
-                                    style={styles.goalDescription}
-                                    placeholder="Goal Description"
-                                    value={description}
-                                    onChangeText={setDescription}
-                                    ref={descriptionRef}
-                                    returnKeyType="done"
-                                    onBlur={handleBlur}
+                                    maxLength={50}
+                                    multiline={true}
                                 />
                                 {isExpanded && (
                                     <>
@@ -116,7 +105,6 @@ function GoalCard({ goal, goalTitle, goalDescription, saveGoal, deleteGoal, isEd
                         ) : (
                             <>
                                 <Text style={styles.goalTitle}>{title}</Text>
-                                <Text style={styles.goalDescription}>{description}</Text>
                             </>
                         )}
                     </>
@@ -155,10 +143,6 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 5,
-    },
-    goalDescription: {
-        fontSize: 16,
-        marginVertical: 2,
     },
     collapseButton: {
         position: "absolute",

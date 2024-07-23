@@ -11,27 +11,23 @@ import {
 
 function AddGoalModal({ visible, onClose, onAdd }) {
   const [goalTitle, setGoalTitle] = useState('');
-  const [goalDescription, setGoalDescription] = useState('');
 
   const handleAdd = () => {
-    if (goalTitle.trim() && goalDescription.trim()) {
+    if (goalTitle.trim()) {
       onAdd({
         id: String(Date.now()), // unique id based on timestamp
         goal: 'newGoal',
         goalTitle,
-        goalDescription,
         createdAt: new Date().toISOString(),
         creator: 'You',
       });
       setGoalTitle('');
-      setGoalDescription('');
       onClose();
     }
   };
 
   const handleCancel = () => {
     setGoalTitle('');
-    setGoalDescription('');
     onClose();
   };
 
@@ -50,14 +46,7 @@ function AddGoalModal({ visible, onClose, onAdd }) {
             placeholder="Goal Title"
             value={goalTitle}
             onChangeText={setGoalTitle}
-          />
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Goal Description"
-            value={goalDescription}
-            onChangeText={setGoalDescription}
-            multiline={true}
-            numberOfLines={4}
+            maxLength={50}
           />
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={handleAdd}>
