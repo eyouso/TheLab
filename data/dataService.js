@@ -65,12 +65,24 @@ export const saveAlbums = (albums) => {
   // Replace with an API call to save the data
 };
 
-export const addWorkoutToAlbum = (albumId, workout) => {
+export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
   const album = currentAlbums.myLibraryAlbums.find(album => album.id === albumId);
   if (album) {
-    workout.id = generateId();
-    album.workouts.push(workout);
+    const existingWorkoutIndex = album.workouts.findIndex(w => w.title === workout.title);
+    if (existingWorkoutIndex !== -1) {
+      if (overwrite) {
+        album.workouts[existingWorkoutIndex] = { ...workout, id: album.workouts[existingWorkoutIndex].id };
+        console.log(`Overwritten workout in album ${albumId}:`, workout);
+      } else {
+        return false;
+      }
+    } else {
+      workout.id = generateId();
+      album.workouts.push(workout);
+      console.log(`Added workout to album ${albumId}:`, workout);
+    }
     saveAlbums(currentAlbums);
-    console.log(`Added workout to album ${albumId}:`, workout);
+    return true;
   }
+  return false;
 };
