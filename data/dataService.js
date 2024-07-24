@@ -1,3 +1,4 @@
+// dataService.js
 import dummyProfileData from './dummyProfileData.json';
 import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
@@ -9,8 +10,9 @@ const generateId = () => {
   return id;
 };
 
-// Maintain a current state of goals in memory
+// Maintain a current state of goals and albums in memory
 let currentGoals = [...dummyGoalData];
+let currentAlbums = { ...dummyAlbums };
 
 export const fetchProfileData = () => {
   return dummyProfileData;
@@ -50,10 +52,25 @@ export const deleteGoal = (goalId) => {
 };
 
 export const fetchAlbums = () => {
-  return dummyAlbums;
+  return currentAlbums;
+};
+
+export const fetchAlbumById = (albumId) => {
+  return Object.values(currentAlbums).flat().find(album => album.id === albumId);
 };
 
 export const saveAlbums = (albums) => {
   console.log('Saving albums:', JSON.stringify(albums, null, 2));
+  currentAlbums = { ...albums };
   // Replace with an API call to save the data
+};
+
+export const addWorkoutToAlbum = (albumId, workout) => {
+  const album = currentAlbums.myLibraryAlbums.find(album => album.id === albumId);
+  if (album) {
+    workout.id = generateId();
+    album.workouts.push(workout);
+    saveAlbums(currentAlbums);
+    console.log(`Added workout to album ${albumId}:`, workout);
+  }
 };

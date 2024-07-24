@@ -7,6 +7,9 @@ import {
   Dimensions,
   Platform,
   Button,
+  Modal,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,6 +17,8 @@ import Colors from '../constants/colors';
 import DrillLiftInput from './DrillLiftInput';
 import DrillLift from './DrillLift';
 import { DrillLiftContext } from '../context/DrillLiftContext';
+import { Entypo } from '@expo/vector-icons'; // Import icons
+import { addWorkoutToAlbum } from '../data/dataService'; // Import the function
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -29,6 +34,7 @@ function Workout({ navigation, workout }) {
   const [isInputVisible, setIsInputVisible] = useState(false);
   const containerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [menuVisible, setMenuVisible] = useState(false); // Menu visibility state
 
   const MAX_WORKOUT_TITLE_LENGTH = 30;
 
@@ -139,6 +145,15 @@ function Workout({ navigation, workout }) {
     />
   );
 
+  const saveWorkout = () => {
+    const newWorkout = {
+      title: workoutTitle,
+      drillLifts,
+    };
+    addWorkoutToAlbum('1', newWorkout); // Save to the "All Workouts" album (id: 1)
+    setMenuVisible(false);
+  };
+
   return (
     <View
       style={[
@@ -147,13 +162,18 @@ function Workout({ navigation, workout }) {
       ]}
       ref={containerRef}
     >
-      <TextInput
-        style={styles.workoutTitleText}
-        onChangeText={setWorkoutTitle}
-        value={workoutTitle}
-        placeholder="New Workout" // Use placeholder
-        maxLength={MAX_WORKOUT_TITLE_LENGTH}
-      />
+      <View style={styles.header}>
+        <TextInput
+          style={styles.workoutTitleText}
+          onChangeText={setWorkoutTitle}
+          value={workoutTitle}
+          placeholder="New Workout" // Use placeholder
+          maxLength={MAX_WORKOUT_TITLE_LENGTH}
+        />
+        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+          <Entypo name="dots-three-horizontal" size={18} color="black" />
+        </TouchableOpacity>
+      </View>
 
       <GestureHandlerRootView
         style={[styles.listContainer, containerHeight ? { flex: 1 } : {}]}
@@ -197,11 +217,34 @@ function Workout({ navigation, workout }) {
           />
         </View>
       )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={menuVisible}
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.menuContainer}>
+            <Button
+              title="Save Workout"
+              onPress={saveWorkout}
+              disabled={!workoutTitle.trim()}
+            />
+            <Button
+              title="Delete Workout"
+              onPress={() => {}}
+            />
+            <Button
+              title="Cancel"
+              onPress={() => setMenuVisible(false)}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
-
-export default Workout;
 
 const styles = StyleSheet.create({
   container: {
@@ -217,11 +260,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     position: 'relative',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   workoutTitleText: {
     color: Colors.DarkGray,
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 10,
+    textAlign: 'center',
+    flex: 1,
   },
   listContainer: {
     width: '100%',
@@ -252,4 +303,18 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'flex-end',
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  menuContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
 });
+
+export default Workout;

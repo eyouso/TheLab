@@ -1,12 +1,32 @@
 {
-    "myLibraryAlbums": [],
-    "teamLibraryAlbums": [
-      {
-        "id": "1",
-        "type": "album",
-        "title": "All Team Drills/Lifts"
-      }
-    ],
-    "communityLibraryAlbums": []
-  }
-  
+  "myLibraryAlbums": [
+    {
+      "id": "1",
+      "type": "album",
+      "title": "All Workouts",
+      "workouts": []
+    }
+  ],
+  "teamLibraryAlbums": [
+    {
+      "id": "2",
+      "type": "album",
+      "title": "All Team Drills/Lifts",
+      "workouts": [
+        {
+          "id": "workout1",
+          "title": "Morning Workout",
+          "drillLifts": [
+            {
+              "id": "drill1",
+              "value": "Push-ups",
+              "sets": 3,
+              "reps": 15
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "communityLibraryAlbums": []
+}

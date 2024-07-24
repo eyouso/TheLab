@@ -13,17 +13,15 @@ import {
 import NavBar from "../components/NavBar";
 import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
-import dummyAlbums from '../data/dummyAlbums.json'; // Import the dummy data
+import { fetchAlbums } from '../data/dataService'; // Import fetchAlbums
 
 function LibraryScreen({ navigation }) {
-  const [myLibraryAlbums, setMyLibraryAlbums] = useState(dummyAlbums.myLibraryAlbums);
-  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState(dummyAlbums.teamLibraryAlbums);
-  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState(dummyAlbums.communityLibraryAlbums);
+  const [albums, setAlbums] = useState(fetchAlbums());
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [albumToDelete, setAlbumToDelete] = useState(null);
   const [newAlbumTitle, setNewAlbumTitle] = useState("");
-  const [currentSetAlbums, setCurrentSetAlbums] = useState(() => setMyLibraryAlbums);
+  const [currentSetAlbums, setCurrentSetAlbums] = useState(() => setAlbums.myLibraryAlbums);
   const inputRef = useRef(null);
   const [enlargedAlbumId, setEnlargedAlbumId] = useState(null);
 
@@ -41,7 +39,7 @@ function LibraryScreen({ navigation }) {
         title: newAlbumTitle,
         contents: [], // Initialize contents array
       };
-      currentSetAlbums((prevAlbums) => [
+      setCurrentSetAlbums((prevAlbums) => [
         ...prevAlbums,
         newAlbum,
       ]);
@@ -69,7 +67,7 @@ function LibraryScreen({ navigation }) {
   };
 
   const confirmDelete = () => {
-    currentSetAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
+    setCurrentSetAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
     setDeleteModalVisible(false);
     setAlbumToDelete(null);
   };
@@ -129,15 +127,15 @@ function LibraryScreen({ navigation }) {
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>My Library</Text>
-          {renderAlbumList(myLibraryAlbums, setMyLibraryAlbums, true, true)}
+          {renderAlbumList(albums.myLibraryAlbums, setCurrentSetAlbums, true, true)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Team Library</Text>
-          {renderAlbumList(teamLibraryAlbums, setTeamLibraryAlbums, false, false)}
+          {renderAlbumList(albums.teamLibraryAlbums, setCurrentSetAlbums, false, false)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Community Library</Text>
-          {renderAlbumList(communityLibraryAlbums, setCommunityLibraryAlbums, false, false)}
+          {renderAlbumList(albums.communityLibraryAlbums, setCurrentSetAlbums, false, false)}
         </View>
 
         <Modal
