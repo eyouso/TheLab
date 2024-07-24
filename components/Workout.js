@@ -18,11 +18,11 @@ import DrillLiftInput from './DrillLiftInput';
 import DrillLift from './DrillLift';
 import { DrillLiftContext } from '../context/DrillLiftContext';
 import { Entypo } from '@expo/vector-icons'; // Import icons
-import { addWorkoutToAlbum } from '../data/dataService'; // Import the function
+import { useNavigation } from '@react-navigation/native'; // Import navigation hook
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function Workout({ navigation, workout }) {
+function Workout({ workout }) {
   const { drillLiftsByWorkout, addDrillLiftToWorkout, updateDrillLift } = useContext(DrillLiftContext);
   const [drillLifts, setDrillLifts] = useState(drillLiftsByWorkout[workout.id] || []);
   const [workoutTitle, setWorkoutTitle] = useState(''); // Initialize with empty string
@@ -35,7 +35,8 @@ function Workout({ navigation, workout }) {
   const containerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false); // Menu visibility state
-  const [overwriteVisible, setOverwriteVisible] = useState(false); // Overwrite confirmation visibility state
+
+  const navigation = useNavigation();
 
   const MAX_WORKOUT_TITLE_LENGTH = 30;
 
@@ -146,18 +147,13 @@ function Workout({ navigation, workout }) {
     />
   );
 
-  const saveWorkout = (overwrite = false) => {
-    const newWorkout = {
+  const saveWorkout = () => {
+    console.log('Navigating to LibrarySaveOptions with workout:', {
       title: workoutTitle,
       drillLifts,
-    };
-    const result = addWorkoutToAlbum('1', newWorkout, overwrite); // Save to the "All Workouts" album (id: 1)
-    if (!result && !overwrite) {
-      setMenuVisible(false);
-      setOverwriteVisible(true);
-    } else {
-      setMenuVisible(false);
-    }
+    });
+    navigation.navigate('LibrarySaveOptions', { workout: { title: workoutTitle, drillLifts } });
+    setMenuVisible(false);
   };
 
   return (
@@ -234,7 +230,7 @@ function Workout({ navigation, workout }) {
           <View style={styles.menuContainer}>
             <Button
               title="Save Workout"
-              onPress={() => saveWorkout(false)}
+              onPress={saveWorkout}
               disabled={!workoutTitle.trim()}
             />
             <Button
@@ -244,30 +240,6 @@ function Workout({ navigation, workout }) {
             <Button
               title="Cancel"
               onPress={() => setMenuVisible(false)}
-            />
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={overwriteVisible}
-        onRequestClose={() => setOverwriteVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.menuContainer}>
-            <Text style={styles.modalText}>A workout with the same name already exists. Would you like to overwrite it?</Text>
-            <Button
-              title="Overwrite"
-              onPress={() => {
-                saveWorkout(true);
-                setOverwriteVisible(false);
-              }}
-            />
-            <Button
-              title="Cancel"
-              onPress={() => setOverwriteVisible(false)}
             />
           </View>
         </View>
@@ -344,12 +316,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

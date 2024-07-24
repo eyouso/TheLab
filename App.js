@@ -1,15 +1,16 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
-import { StyleSheet, View } from "react-native";
-import MainScreen from "./screens/MainScreen";
-import ProfileScreen from "./screens/ProfileScreen";
-import LibraryScreen from "./screens/LibraryScreen";
-import AlbumContentScreen from "./screens/AlbumContentScreen";
-import DrillLiftDetailScreen from "./screens/DrillLiftDetailScreen"; // Adjust the path as necessary
-import BottomBar from "./components/BottomBar"; // Adjust the path as necessary
-import { DrillLiftProvider } from "./context/DrillLiftContext"; // Import the context provider
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { StyleSheet, View } from 'react-native';
+import MainScreen from './screens/MainScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import LibraryScreen from './screens/LibraryScreen';
+import AlbumContentScreen from './screens/AlbumContentScreen';
+import DrillLiftDetailScreen from './screens/DrillLiftDetailScreen'; // Adjust the path as necessary
+import BottomBar from './components/BottomBar'; // Adjust the path as necessary
+import { DrillLiftProvider } from './context/DrillLiftContext'; // Import the context provider
+import LibrarySaveOptionsScreen from './screens/LibrarySaveOptionsScreen'; // Import the new screen
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -24,6 +25,7 @@ function MainStack() {
       />
       <Stack.Screen name="DrillLiftDetail" component={DrillLiftDetailScreen} options={{ headerTitle: 'Details', headerShown: false }} />
       <Stack.Screen name="AlbumContent" component={AlbumContentScreen} options={{ headerTitle: 'Album Content', headerShown: false }} />
+      <Stack.Screen name="LibrarySaveOptions" component={LibrarySaveOptionsScreen} options={{ headerTitle: 'Save Workout', headerShown: false }} />
     </Stack.Navigator>
   );
 }

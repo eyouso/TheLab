@@ -1,16 +1,20 @@
-// AlbumContentScreen.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, SafeAreaView, Button, Modal, TouchableOpacity } from "react-native";
-import Album from "../components/Album";
-import Workout from "../components/Workout"; // Assuming you have a Workout component
-import DrillLift from "../components/DrillLift"; // Assuming you have a DrillLift component
 
 function AlbumContentScreen({ route, navigation }) {
   const { album } = route.params;
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  useEffect(() => {
+    console.log('Album contents:', album.contents);
+    album.contents.forEach(item => {
+      console.log('Workout ID:', item.id);
+    });
+  }, [album.contents]);
+
   const renderItem = ({ item }) => {
+    console.log('Rendering item with ID:', item.id);
     return (
       <TouchableOpacity
         style={styles.itemContainer}
@@ -41,7 +45,7 @@ function AlbumContentScreen({ route, navigation }) {
       <View style={styles.container}>
         <Text style={styles.title}>{album.title}</Text>
         <FlatList
-          data={album.workouts}
+          data={album.contents}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.contentContainer}
@@ -107,8 +111,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
-      width: 0,
-      height: 2
+      width: 0, height: 2
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,

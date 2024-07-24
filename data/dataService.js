@@ -1,4 +1,3 @@
-// dataService.js
 import dummyProfileData from './dummyProfileData.json';
 import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
@@ -10,7 +9,7 @@ const generateId = () => {
   return id;
 };
 
-// Maintain a current state of goals and albums in memory
+// Maintain a current state of goals in memory
 let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
 
@@ -55,34 +54,31 @@ export const fetchAlbums = () => {
   return currentAlbums;
 };
 
-export const fetchAlbumById = (albumId) => {
-  return Object.values(currentAlbums).flat().find(album => album.id === albumId);
-};
-
-export const saveAlbums = (albums) => {
-  console.log('Saving albums:', JSON.stringify(albums, null, 2));
-  currentAlbums = { ...albums };
-  // Replace with an API call to save the data
-};
-
 export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
-  const album = currentAlbums.myLibraryAlbums.find(album => album.id === albumId);
-  if (album) {
-    const existingWorkoutIndex = album.workouts.findIndex(w => w.title === workout.title);
-    if (existingWorkoutIndex !== -1) {
-      if (overwrite) {
-        album.workouts[existingWorkoutIndex] = { ...workout, id: album.workouts[existingWorkoutIndex].id };
-        console.log(`Overwritten workout in album ${albumId}:`, workout);
-      } else {
-        return false;
-      }
-    } else {
-      workout.id = generateId();
-      album.workouts.push(workout);
-      console.log(`Added workout to album ${albumId}:`, workout);
-    }
-    saveAlbums(currentAlbums);
-    return true;
+  const album = currentAlbums.myLibraryAlbums.find(a => a.id === albumId) || currentAlbums.teamLibraryAlbums.find(a => a.id === albumId) || currentAlbums.communityLibraryAlbums.find(a => a.id === albumId);
+
+  if (!album) {
+    console.error(`Album with ID ${albumId} not found`);
+    return false;
   }
-  return false;
+
+  if (!workout.id) {
+    workout.id = generateId();  // Ensure workout has a unique id
+  }
+
+  const existingWorkoutIndex = album.contents.findIndex(w => w.title === workout.title);
+  console.log('Existing workout index:', existingWorkoutIndex);
+
+  if (existingWorkoutIndex !== -1) {
+    if (overwrite) {
+      album.contents[existingWorkoutIndex] = workout;
+    } else {
+      return false;
+    }
+  } else {
+    album.contents.push(workout);
+  }
+
+  console.log('Workout added to album:', albumId);
+  return true;
 };

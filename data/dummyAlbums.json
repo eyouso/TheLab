@@ -4,7 +4,7 @@
       "id": "1",
       "type": "album",
       "title": "All Workouts",
-      "workouts": []
+      "contents": []
     }
   ],
   "teamLibraryAlbums": [
@@ -12,7 +12,7 @@
       "id": "2",
       "type": "album",
       "title": "All Team Drills/Lifts",
-      "workouts": [
+      "contents": [
         {
           "id": "workout1",
           "title": "Morning Workout",
