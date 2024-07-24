@@ -9,7 +9,7 @@ const generateId = () => {
   return id;
 };
 
-// Maintain a current state of goals in memory
+// Maintain a current state of goals and albums in memory
 let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
 
@@ -54,6 +54,20 @@ export const fetchAlbums = () => {
   return currentAlbums;
 };
 
+export const addAlbum = (newAlbum) => {
+  newAlbum.id = generateId();
+  console.log('Adding new album:', newAlbum);
+  currentAlbums.myLibraryAlbums.push(newAlbum);
+  saveAlbums(currentAlbums);
+  return newAlbum;
+};
+
+export const saveAlbums = (albums) => {
+  console.log('Saving albums:', JSON.stringify(albums, null, 2));
+  currentAlbums = { ...albums };
+  // Here you would replace the console log with an API call to save the data
+};
+
 export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
   const album = currentAlbums.myLibraryAlbums.find(a => a.id === albumId) || currentAlbums.teamLibraryAlbums.find(a => a.id === albumId) || currentAlbums.communityLibraryAlbums.find(a => a.id === albumId);
 
@@ -79,6 +93,7 @@ export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
     album.contents.push(workout);
   }
 
+  saveAlbums(currentAlbums);
   console.log('Workout added to album:', albumId);
   return true;
 };

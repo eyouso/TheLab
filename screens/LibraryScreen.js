@@ -13,19 +13,25 @@ import {
 import NavBar from "../components/NavBar";
 import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
-import dummyAlbums from '../data/dummyAlbums.json'; // Import the dummy data
+import { fetchAlbums, addAlbum } from '../data/dataService'; // Import the new addAlbum function
 
 function LibraryScreen({ navigation }) {
-  const [myLibraryAlbums, setMyLibraryAlbums] = useState(dummyAlbums.myLibraryAlbums);
-  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState(dummyAlbums.teamLibraryAlbums);
-  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState(dummyAlbums.communityLibraryAlbums);
+  const [myLibraryAlbums, setMyLibraryAlbums] = useState([]);
+  const [teamLibraryAlbums, setTeamLibraryAlbums] = useState([]);
+  const [communityLibraryAlbums, setCommunityLibraryAlbums] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [albumToDelete, setAlbumToDelete] = useState(null);
   const [newAlbumTitle, setNewAlbumTitle] = useState("");
-  const [currentSetAlbums, setCurrentSetAlbums] = useState(() => setMyLibraryAlbums);
   const inputRef = useRef(null);
   const [enlargedAlbumId, setEnlargedAlbumId] = useState(null);
+
+  useEffect(() => {
+    const albums = fetchAlbums();
+    setMyLibraryAlbums(albums.myLibraryAlbums);
+    setTeamLibraryAlbums(albums.teamLibraryAlbums);
+    setCommunityLibraryAlbums(albums.communityLibraryAlbums);
+  }, []);
 
   useEffect(() => {
     if (modalVisible && inputRef.current) {
@@ -33,18 +39,14 @@ function LibraryScreen({ navigation }) {
     }
   }, [modalVisible]);
 
-  const addAlbum = () => {
+  const addNewAlbum = () => {
     if (newAlbumTitle.trim()) {
       const newAlbum = {
-        id: String(Math.random()),
-        type: "album",
         title: newAlbumTitle,
         contents: [], // Initialize contents array
       };
-      currentSetAlbums((prevAlbums) => [
-        ...prevAlbums,
-        newAlbum,
-      ]);
+      const addedAlbum = addAlbum(newAlbum);
+      setMyLibraryAlbums(fetchAlbums().myLibraryAlbums); // Refresh the album list from the data service
       setNewAlbumTitle("");
       setModalVisible(false);
     }
@@ -69,7 +71,7 @@ function LibraryScreen({ navigation }) {
   };
 
   const confirmDelete = () => {
-    currentSetAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
+    setMyLibraryAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
     setDeleteModalVisible(false);
     setAlbumToDelete(null);
   };
@@ -87,7 +89,6 @@ function LibraryScreen({ navigation }) {
           <PrimaryButton
             style={styles.addButton}
             onPress={() => {
-              setCurrentSetAlbums(() => setAlbums);
               setModalVisible(true);
             }}
           >
@@ -107,13 +108,13 @@ function LibraryScreen({ navigation }) {
       );
     };
 
-  const renderAlbumList = (albums, setAlbums, showAddButton, expandable) => {
+  const renderAlbumList = (albums, showAddButton, expandable) => {
     const data = showAddButton ? [...albums, { id: "add-button", type: "button" }] : albums;
     return (
       <FlatList
         horizontal
         data={data}
-        renderItem={renderItem(setAlbums, expandable)}
+        renderItem={renderItem(setMyLibraryAlbums, expandable)}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.albumList}
         showsHorizontalScrollIndicator={false} // Hide the horizontal scroll indicator
@@ -129,15 +130,15 @@ function LibraryScreen({ navigation }) {
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>My Library</Text>
-          {renderAlbumList(myLibraryAlbums, setMyLibraryAlbums, true, true)}
+          {renderAlbumList(myLibraryAlbums, true, true)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Team Library</Text>
-          {renderAlbumList(teamLibraryAlbums, setTeamLibraryAlbums, false, false)}
+          {renderAlbumList(teamLibraryAlbums, false, false)}
         </View>
         <View style={styles.libraryContainer}>
           <Text style={styles.libraryTitleText}>Community Library</Text>
-          {renderAlbumList(communityLibraryAlbums, setCommunityLibraryAlbums, false, false)}
+          {renderAlbumList(communityLibraryAlbums, false, false)}
         </View>
 
         <Modal
@@ -156,7 +157,7 @@ function LibraryScreen({ navigation }) {
               onChangeText={setNewAlbumTitle}
               maxLength={30} // Set your desired character limit here
             />
-            <Button title="Confirm" onPress={addAlbum} />
+            <Button title="Confirm" onPress={addNewAlbum} />
             <Button title="Cancel" onPress={handleCancel} />
           </View>
         </Modal>
