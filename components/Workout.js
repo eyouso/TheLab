@@ -165,14 +165,19 @@ function Workout({ workout }) {
       ref={containerRef}
     >
       <View style={styles.header}>
-        <TextInput
-          style={styles.workoutTitleText}
-          onChangeText={setWorkoutTitle}
-          value={workoutTitle}
-          placeholder="New Workout" // Use placeholder
-          maxLength={MAX_WORKOUT_TITLE_LENGTH}
-        />
-        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+        <View style={styles.titleContainer}>
+          <TextInput
+            style={styles.workoutTitleText}
+            onChangeText={setWorkoutTitle}
+            value={workoutTitle}
+            placeholder="New Workout" // Use placeholder
+            maxLength={MAX_WORKOUT_TITLE_LENGTH}
+            multiline={true}
+            returnKeyType='done'
+            blurOnSubmit={true}
+          />
+        </View>
+        <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuIcon}>
           <Entypo name="dots-three-horizontal" size={18} color="black" />
         </TouchableOpacity>
       </View>
@@ -268,13 +273,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
   workoutTitleText: {
     color: Colors.DarkGray,
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 10,
     textAlign: 'center',
-    flex: 1,
+    width: '80%',
+  },
+  menuIcon: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   listContainer: {
     width: '100%',
