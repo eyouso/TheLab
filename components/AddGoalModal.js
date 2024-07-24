@@ -13,20 +13,24 @@ function AddGoalModal({ visible, onClose, onAdd }) {
   const [goalTitle, setGoalTitle] = useState('');
 
   const handleAdd = () => {
+    console.log('Add button pressed');
     if (goalTitle.trim()) {
-      onAdd({
+      const newGoal = {
         id: String(Date.now()), // unique id based on timestamp
         goal: 'newGoal',
         goalTitle,
         createdAt: new Date().toISOString(),
         creator: 'You',
-      });
+      };
+      console.log('New goal:', newGoal);
+      onAdd(newGoal);
       setGoalTitle('');
       onClose();
     }
   };
 
   const handleCancel = () => {
+    console.log('Cancel button pressed');
     setGoalTitle('');
     onClose();
   };
@@ -89,9 +93,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
-  },
-  textArea: {
-    height: 80, // Increased height for text area
   },
   buttonContainer: {
     flexDirection: 'row',

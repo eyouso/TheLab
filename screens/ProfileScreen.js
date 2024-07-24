@@ -14,9 +14,8 @@ import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import NavBar from "../components/NavBar";
 import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
-import AddGoalModal from "../components/AddGoalModal"; // Import the new modal
-import dummyProfileData from "../data/dummyProfileData.json";
-import dummyGoalData from "../data/dummyGoalData.json";
+import AddGoalModal from "../components/AddGoalModal";
+import { fetchProfileData, fetchGoalData, addGoal, updateGoal, deleteGoal } from "../data/dataService";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -26,22 +25,36 @@ function ProfileScreen() {
   const [goalToDelete, setGoalToDelete] = useState(null);
 
   useEffect(() => {
-    // Set initial goals from dummy data
-    setGoals(dummyGoalData);
+    console.log("Fetching initial goals");
+    const initialGoals = fetchGoalData();
+    console.log("Initial goals:", initialGoals);
+    setGoals(initialGoals);
   }, []);
 
-  const { name, class: className, team, position, height } = dummyProfileData;
+  const profileData = fetchProfileData();
+  const { name, class: className, team, position, height } = profileData;
 
-  const addGoal = (newGoal) => {
-    setGoals((prevGoals) => [...prevGoals, newGoal]);
+  const handleAddGoal = (newGoal) => {
+    console.log("handleAddGoal called");
+    const addedGoal = addGoal(newGoal);
+    console.log("Added goal:", addedGoal);
+    setGoals((prevGoals) => {
+      const goalExists = prevGoals.some(goal => goal.id === addedGoal.id);
+      if (!goalExists) {
+        return [...prevGoals, addedGoal];
+      }
+      return prevGoals;
+    });
   };
 
-  const saveGoal = (goal) => {
-    setGoals((prevGoals) => prevGoals.map((g) => (g.id === goal.id ? goal : g)));
+  const handleSaveGoal = (goal) => {
+    const updatedGoal = updateGoal(goal);
+    setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
   };
 
-  const deleteGoal = (id) => {
-    setGoals((prevGoals) => prevGoals.filter((g) => g.id !== id));
+  const handleDeleteGoal = (id) => {
+    const updatedGoals = deleteGoal(id);
+    setGoals(updatedGoals);
   };
 
   const expandGoal = (id) => {
@@ -58,7 +71,7 @@ function ProfileScreen() {
   };
 
   const confirmDelete = () => {
-    deleteGoal(goalToDelete);
+    handleDeleteGoal(goalToDelete);
     setDeleteModalVisible(false);
     setGoalToDelete(null);
   };
@@ -82,9 +95,10 @@ function ProfileScreen() {
               <GoalCard
                 goal={item.goal}
                 goalTitle={item.goalTitle}
+                goalDescription={item.goalDescription}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
-                saveGoal={saveGoal}
+                saveGoal={handleSaveGoal}
                 deleteGoal={() => handleDeletePress(item.id)}
                 expandGoal={() => expandGoal(item.id)}
                 collapseGoal={() => collapseGoal(item.id)}
@@ -98,7 +112,7 @@ function ProfileScreen() {
           enableOnAndroid={true}
           ListFooterComponent={
             <View style={styles.addGoalView}>
-              <Button title="Add Goal" onPress={() => setIsModalVisible(true)}>Add Goal</Button>
+              <Button title="Add Goal" onPress={() => setIsModalVisible(true)} />
             </View>
           }
           contentContainerStyle={styles.flatListContent}
@@ -106,7 +120,7 @@ function ProfileScreen() {
         <AddGoalModal
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
-          onAdd={addGoal}
+          onAdd={handleAddGoal}
         />
         <Modal
           animationType="slide"
