@@ -14,13 +14,19 @@ import { StatusBar } from 'expo-status-bar';
 import NavBar from '../components/NavBar';
 import Workout from '../components/Workout';
 import Colors from '../constants/colors';
+import { fetchActiveWorkouts, addActiveWorkout, updateActiveWorkout } from '../data/dataService';
 
 const { width } = Dimensions.get('window');
 
 function MainScreen({ navigation }) {
-  const [workouts, setWorkouts] = useState([{ id: 0, title: '', drillLifts: [] }]);
+  const [workouts, setWorkouts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const activeWorkouts = fetchActiveWorkouts();
+    setWorkouts(activeWorkouts);
+  }, []);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -50,11 +56,12 @@ function MainScreen({ navigation }) {
 
   const addWorkout = () => {
     const newWorkout = {
-      id: workouts.length,
+      id: Math.random().toString(),
       title: '',
       drillLifts: [],
     };
     setWorkouts([...workouts, newWorkout]);
+    addActiveWorkout(newWorkout); // Add to dummy database
   };
 
   const updateDrillLifts = (workoutId, newDrillLifts) => {
@@ -65,6 +72,11 @@ function MainScreen({ navigation }) {
           : workout
       )
     );
+    const updatedWorkout = workouts.find(workout => workout.id === workoutId);
+    if (updatedWorkout) {
+      updatedWorkout.drillLifts = newDrillLifts;
+      updateActiveWorkout(updatedWorkout); // Update in dummy database
+    }
   };
 
   return (

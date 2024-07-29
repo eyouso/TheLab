@@ -1,8 +1,7 @@
-// dataService.js
-
 import dummyProfileData from './dummyProfileData.json';
 import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
+import dummyActiveWorkouts from './dummyActiveWorkouts.json';
 
 // Simulate unique ID generation
 const generateId = () => {
@@ -11,9 +10,10 @@ const generateId = () => {
   return id;
 };
 
-// Maintain a current state of goals and albums in memory
+// Maintain a current state of goals, albums, and active workouts in memory
 let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
+let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
 export const fetchProfileData = () => {
   return dummyProfileData;
@@ -100,7 +100,6 @@ export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
   return true;
 };
 
-// New deleteAlbum method
 export const deleteAlbum = (albumId) => {
   const albumIndex = currentAlbums.myLibraryAlbums.findIndex(album => album.id === albumId);
   if (albumIndex !== -1) {
@@ -109,4 +108,48 @@ export const deleteAlbum = (albumId) => {
     return true;
   }
   return false;
+};
+
+// Functions for managing active workouts
+export const fetchActiveWorkouts = () => {
+  return currentActiveWorkouts;
+};
+
+export const addActiveWorkout = (workout) => {
+  workout.id = generateId();
+  currentActiveWorkouts.push(workout);
+  saveActiveWorkouts();
+  return workout;
+};
+
+export const deleteActiveWorkout = (workoutId) => {
+  currentActiveWorkouts = currentActiveWorkouts.filter(workout => workout.id !== workoutId);
+  saveActiveWorkouts();
+  return currentActiveWorkouts;
+};
+
+export const saveActiveWorkouts = () => {
+  console.log('Saving active workouts:', JSON.stringify(currentActiveWorkouts, null, 2));
+  // Here you would replace the console log with an API call to save the data
+};
+
+export const updateActiveWorkout = (updatedWorkout) => {
+  const index = currentActiveWorkouts.findIndex(workout => workout.id === updatedWorkout.id);
+  if (index !== -1) {
+    currentActiveWorkouts[index] = updatedWorkout;
+    saveActiveWorkouts();
+  }
+  return updatedWorkout;
+};
+
+export const updateDrillLiftInWorkout = (workoutId, drillLiftId, updatedDrillLift) => {
+  const workoutIndex = currentActiveWorkouts.findIndex(workout => workout.id === workoutId);
+  if (workoutIndex !== -1) {
+    const workout = currentActiveWorkouts[workoutIndex];
+    const drillLiftIndex = workout.drillLifts.findIndex(drillLift => drillLift.id === drillLiftId);
+    if (drillLiftIndex !== -1) {
+      workout.drillLifts[drillLiftIndex] = updatedDrillLift;
+      updateActiveWorkout(workout);
+    }
+  }
 };

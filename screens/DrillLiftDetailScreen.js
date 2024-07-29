@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { DrillLiftContext } from "../context/DrillLiftContext";
+import { updateDrillLiftInWorkout } from '../data/dataService'; // Import the update function
 
 function DrillLiftDetailScreen({ route, navigation }) {
   const { drillLiftId, workoutId } = route.params || {};
@@ -38,14 +39,16 @@ function DrillLiftDetailScreen({ route, navigation }) {
 
   const handleSave = () => {
     if (drillLift) {
-      updateDrillLift(workoutId, drillLift.id, {
+      const updatedDrillLift = {
         value: title,
         sets,
         reps,
         description,
         instructions,
         notes,
-      });
+      };
+      updateDrillLift(workoutId, drillLift.id, updatedDrillLift);
+      updateDrillLiftInWorkout(workoutId, drillLift.id, updatedDrillLift); // Update the database
     }
     if (navigation.canGoBack()) {
       navigation.goBack();

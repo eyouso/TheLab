@@ -19,13 +19,14 @@ import DrillLift from './DrillLift';
 import { DrillLiftContext } from '../context/DrillLiftContext';
 import { Entypo } from '@expo/vector-icons'; // Import icons
 import { useNavigation } from '@react-navigation/native'; // Import navigation hook
+import { updateActiveWorkout } from '../data/dataService'; // Import the updateActiveWorkout function
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function Workout({ workout }) {
+function Workout({ workout, updateDrillLifts }) {
   const { drillLiftsByWorkout, addDrillLiftToWorkout, updateDrillLift } = useContext(DrillLiftContext);
   const [drillLifts, setDrillLifts] = useState(drillLiftsByWorkout[workout.id] || []);
-  const [workoutTitle, setWorkoutTitle] = useState(''); // Initialize with empty string
+  const [workoutTitle, setWorkoutTitle] = useState(workout.title || ''); // Initialize with workout title
   const [drillLiftName, setDrillLiftName] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -116,6 +117,7 @@ function Workout({ workout }) {
       setSets('');
       setReps('');
       setTimeout(adjustContainerHeight, 0);
+      updateDrillLifts(workout.id, [...drillLifts, newDrillLift]); // Update in dummy database
     }
   };
 
@@ -126,7 +128,18 @@ function Workout({ workout }) {
   };
 
   const updateDrillLiftDetails = (id, newDetails) => {
+    const updatedDrillLifts = drillLifts.map(drillLift =>
+      drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
+    );
+    setDrillLifts(updatedDrillLifts);
     updateDrillLift(workout.id, id, newDetails); // Update context
+    updateDrillLifts(workout.id, updatedDrillLifts); // Update in dummy database
+  };
+
+  const handleTitleChange = (title) => {
+    setWorkoutTitle(title);
+    const updatedWorkout = { ...workout, title };
+    updateActiveWorkout(updatedWorkout); // Update in dummy database
   };
 
   const renderItem = ({ item, drag, isActive }) => (
@@ -168,7 +181,7 @@ function Workout({ workout }) {
         <View style={styles.titleContainer}>
           <TextInput
             style={styles.workoutTitleText}
-            onChangeText={setWorkoutTitle}
+            onChangeText={handleTitleChange}
             value={workoutTitle}
             placeholder="New Workout" // Use placeholder
             maxLength={MAX_WORKOUT_TITLE_LENGTH}
