@@ -36,7 +36,7 @@ function ProfileScreen() {
 
   const handleAddGoal = (newGoal) => {
     console.log("handleAddGoal called");
-    const addedGoal = addGoal(newGoal);
+    const addedGoal = addGoal(newGoal); // Use addGoal from dataService
     console.log("Added goal:", addedGoal);
     setGoals((prevGoals) => {
       const goalExists = prevGoals.some(goal => goal.id === addedGoal.id);

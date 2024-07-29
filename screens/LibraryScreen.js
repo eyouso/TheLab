@@ -13,7 +13,7 @@ import {
 import NavBar from "../components/NavBar";
 import Album from "../components/Album";
 import PrimaryButton from "../components/PrimaryButton";
-import { fetchAlbums, addAlbum } from '../data/dataService'; // Import the new addAlbum function
+import { fetchAlbums, addAlbum, deleteAlbum } from '../data/dataService'; // Import the new deleteAlbum function
 
 function LibraryScreen({ navigation }) {
   const [myLibraryAlbums, setMyLibraryAlbums] = useState([]);
@@ -71,7 +71,9 @@ function LibraryScreen({ navigation }) {
   };
 
   const confirmDelete = () => {
-    setMyLibraryAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
+    if (deleteAlbum(albumToDelete)) {
+      setMyLibraryAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumToDelete));
+    }
     setDeleteModalVisible(false);
     setAlbumToDelete(null);
   };

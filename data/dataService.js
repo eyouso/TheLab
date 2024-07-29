@@ -1,3 +1,5 @@
+// dataService.js
+
 import dummyProfileData from './dummyProfileData.json';
 import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
@@ -96,4 +98,15 @@ export const addWorkoutToAlbum = (albumId, workout, overwrite = false) => {
   saveAlbums(currentAlbums);
   console.log('Workout added to album:', albumId);
   return true;
+};
+
+// New deleteAlbum method
+export const deleteAlbum = (albumId) => {
+  const albumIndex = currentAlbums.myLibraryAlbums.findIndex(album => album.id === albumId);
+  if (albumIndex !== -1) {
+    currentAlbums.myLibraryAlbums.splice(albumIndex, 1);
+    saveAlbums(currentAlbums);
+    return true;
+  }
+  return false;
 };
