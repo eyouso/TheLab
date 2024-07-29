@@ -128,11 +128,6 @@ export const deleteActiveWorkout = (workoutId) => {
   return currentActiveWorkouts;
 };
 
-export const saveActiveWorkouts = () => {
-  console.log('Saving active workouts:', JSON.stringify(currentActiveWorkouts, null, 2));
-  // Here you would replace the console log with an API call to save the data
-};
-
 export const updateActiveWorkout = (updatedWorkout) => {
   const index = currentActiveWorkouts.findIndex(workout => workout.id === updatedWorkout.id);
   if (index !== -1) {
@@ -152,4 +147,9 @@ export const updateDrillLiftInWorkout = (workoutId, drillLiftId, updatedDrillLif
       updateActiveWorkout(workout);
     }
   }
+};
+
+export const saveActiveWorkouts = () => {
+  console.log('Saving active workouts:', JSON.stringify(currentActiveWorkouts, null, 2));
+  // Here you would replace the console log with an API call to save the data
 };

@@ -17,16 +17,16 @@ import Colors from '../constants/colors';
 import DrillLiftInput from './DrillLiftInput';
 import DrillLift from './DrillLift';
 import { DrillLiftContext } from '../context/DrillLiftContext';
-import { Entypo } from '@expo/vector-icons'; // Import icons
-import { useNavigation } from '@react-navigation/native'; // Import navigation hook
-import { updateActiveWorkout } from '../data/dataService'; // Import the updateActiveWorkout function
+import { Entypo } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { deleteActiveWorkout, updateActiveWorkout } from '../data/dataService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function Workout({ workout, updateDrillLifts }) {
+function Workout({ workout, updateDrillLifts, removeWorkoutFromScreen }) {
   const { drillLiftsByWorkout, addDrillLiftToWorkout, updateDrillLift } = useContext(DrillLiftContext);
   const [drillLifts, setDrillLifts] = useState(drillLiftsByWorkout[workout.id] || []);
-  const [workoutTitle, setWorkoutTitle] = useState(workout.title || ''); // Initialize with workout title
+  const [workoutTitle, setWorkoutTitle] = useState(workout.title || '');
   const [drillLiftName, setDrillLiftName] = useState('');
   const [sets, setSets] = useState('');
   const [reps, setReps] = useState('');
@@ -35,7 +35,8 @@ function Workout({ workout, updateDrillLifts }) {
   const [isInputVisible, setIsInputVisible] = useState(false);
   const containerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [menuVisible, setMenuVisible] = useState(false); // Menu visibility state
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const navigation = useNavigation();
 
@@ -112,12 +113,12 @@ function Workout({ workout, updateDrillLifts }) {
         ...currentDrillLifts,
         newDrillLift,
       ]);
-      addDrillLiftToWorkout(workout.id, newDrillLift); // Update context
+      addDrillLiftToWorkout(workout.id, newDrillLift);
       setDrillLiftName('');
       setSets('');
       setReps('');
       setTimeout(adjustContainerHeight, 0);
-      updateDrillLifts(workout.id, [...drillLifts, newDrillLift]); // Update in dummy database
+      updateDrillLifts(workout.id, [...drillLifts, newDrillLift]);
     }
   };
 
@@ -132,14 +133,25 @@ function Workout({ workout, updateDrillLifts }) {
       drillLift.id === id ? { ...drillLift, ...newDetails } : drillLift
     );
     setDrillLifts(updatedDrillLifts);
-    updateDrillLift(workout.id, id, newDetails); // Update context
-    updateDrillLifts(workout.id, updatedDrillLifts); // Update in dummy database
+    updateDrillLift(workout.id, id, newDetails);
+    updateDrillLifts(workout.id, updatedDrillLifts);
   };
 
   const handleTitleChange = (title) => {
     setWorkoutTitle(title);
     const updatedWorkout = { ...workout, title };
-    updateActiveWorkout(updatedWorkout); // Update in dummy database
+    updateActiveWorkout(updatedWorkout);
+  };
+
+  const handleDeleteWorkout = () => {
+    setMenuVisible(false); // Close the first modal
+    setTimeout(() => setDeleteModalVisible(true), 500); // Show the confirmation modal with a slight delay
+  };
+
+  const confirmDeleteWorkout = () => {
+    deleteActiveWorkout(workout.id);
+    removeWorkoutFromScreen(workout.id);
+    setDeleteModalVisible(false);
   };
 
   const renderItem = ({ item, drag, isActive }) => (
@@ -153,9 +165,9 @@ function Workout({ workout, updateDrillLifts }) {
       notes={item.notes}
       onLongPress={drag}
       isActive={isActive}
-      navigation={navigation} // Ensure navigation is passed here
+      navigation={navigation}
       id={item.id}
-      workoutId={workout.id} // Pass workoutId to DrillLift
+      workoutId={workout.id}
       updateDrillLiftDetails={updateDrillLiftDetails}
     />
   );
@@ -183,7 +195,7 @@ function Workout({ workout, updateDrillLifts }) {
             style={styles.workoutTitleText}
             onChangeText={handleTitleChange}
             value={workoutTitle}
-            placeholder="New Workout" // Use placeholder
+            placeholder="New Workout"
             maxLength={MAX_WORKOUT_TITLE_LENGTH}
             multiline={true}
             returnKeyType='done'
@@ -253,7 +265,7 @@ function Workout({ workout, updateDrillLifts }) {
             />
             <Button
               title="Delete Workout"
-              onPress={() => {}}
+              onPress={handleDeleteWorkout} // Handle delete workout
             />
             <Button
               title="Cancel"
@@ -262,9 +274,38 @@ function Workout({ workout, updateDrillLifts }) {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={deleteModalVisible} // Delete modal visibility
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text>Are you sure you want to delete this workout? This will not remove it from the library.</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={confirmDeleteWorkout} // Confirm delete workout
+              >
+                <Text style={styles.modalButtonText}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+
+export default Workout;
 
 const styles = StyleSheet.create({
   container: {
@@ -344,6 +385,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  modalButton: {
+    marginHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#2196F3',
+    borderRadius: 5,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
 });
-
-export default Workout;

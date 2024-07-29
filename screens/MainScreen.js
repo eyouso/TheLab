@@ -79,6 +79,10 @@ function MainScreen({ navigation }) {
     }
   };
 
+  const removeWorkoutFromScreen = (workoutId) => {
+    setWorkouts((prevWorkouts) => prevWorkouts.filter(workout => workout.id !== workoutId));
+  };
+
   return (
     <View style={styles.container}>
       <NavBar />
@@ -103,6 +107,7 @@ function MainScreen({ navigation }) {
                   navigation={navigation}
                   workout={workout}
                   updateDrillLifts={updateDrillLifts}
+                  removeWorkoutFromScreen={removeWorkoutFromScreen} // Pass the remove function
                 />
               </View>
             ))}
