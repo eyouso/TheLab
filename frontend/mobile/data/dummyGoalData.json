@@ -1,0 +1,17 @@
+[
+    {
+      "id": "1",
+      "goal": "teamGoal",
+      "goalTitle": "Weigh 215 lbs",
+      "createdAt": "2023-07-22T00:00:00Z",
+      "creator": "Coach Gianna"
+    },
+    {
+      "id": "2",
+      "goal": "individualGoal",
+      "goalTitle": "Complete 100m sprint in under 12 seconds",
+      "createdAt": "2023-07-23T00:00:00Z",
+      "creator": "Coach Gianna"
+    }
+  ]
+  
