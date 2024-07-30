@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "lab_user",
+    "password": "InTheLab1",
+    "database": "the_lab_db",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port": 5432
+  },
+  "test": {
+    "username": "lab_user",
+    "password": "InTheLab1",
+    "database": "the_lab_db_test",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port": 5432
+  },
+  "production": {
+    "username": "lab_user",
+    "password": "InTheLab1",
+    "database": "the_lab_db_production",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port": 5432
+  }
+}
