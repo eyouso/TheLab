@@ -93,7 +93,8 @@ function ProfileScreen() {
           renderItem={({ item }) => (
             <View style={styles.goalCardContainer}>
               <GoalCard
-                goal={item.goal}
+                goalId={item.id} // Pass the correct goal ID
+                goal={item.goal} // Pass the goal type
                 goalTitle={item.goalTitle}
                 goalDescription={item.goalDescription}
                 isEditing={item.isEditing}

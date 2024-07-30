@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   Button,
   Keyboard,
+  Modal,
 } from "react-native";
 import Colors from "../constants/colors";
+import { updateGoal } from "../data/dataService"; // Import updateGoal function
 
 function GoalCard({
-  goal,
+  goalId, // Changed from goal to goalId to be more explicit
+  goal, // Add goal type to differentiate between team and individual goals
   goalTitle,
   saveGoal,
   deleteGoal,
@@ -25,6 +28,8 @@ function GoalCard({
   const [title, setTitle] = useState(goalTitle);
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [isExpanded, setIsExpanded] = useState(initialIsExpanded);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [tempTitle, setTempTitle] = useState(goalTitle);
 
   useEffect(() => {
     if (initialIsEditing) {
@@ -37,22 +42,7 @@ function GoalCard({
 
   const handlePress = () => {
     setIsExpanded(true);
-    setIsEditing(true);
     expandGoal();
-  };
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    setIsExpanded(false);
-    if (saveGoal) {
-      saveGoal({
-        id: goal,
-        goal: goal,
-        goalTitle: title,
-        createdAt,
-        creator,
-      });
-    }
   };
 
   const handleTitleSubmit = () => {
@@ -61,12 +51,33 @@ function GoalCard({
 
   const handleCollapse = () => {
     setIsExpanded(false);
-    setIsEditing(false);
     collapseGoal();
   };
 
   const handleDelete = () => {
     deleteGoal();
+  };
+
+  const handleEdit = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = () => {
+    const updatedGoal = {
+      id: goalId,
+      goalTitle: tempTitle,
+      createdAt,
+      creator,
+    };
+    console.log('Updated Goal before saving:', updatedGoal); // Debugging log
+    updateGoal(updatedGoal); // Update the goal in the mock database
+    setTitle(tempTitle);
+    setEditModalVisible(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTempTitle(title); // Reset the temp title
+    setEditModalVisible(false);
   };
 
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
@@ -110,21 +121,14 @@ function GoalCard({
                     <Text style={styles.goalDate}>{formattedDate}</Text>
                   </View>
                 )}
-                <TextInput
-                  style={styles.goalTitle}
-                  placeholder="Goal Title"
-                  value={title}
-                  onChangeText={setTitle}
-                  returnKeyType="done"
-                  onSubmitEditing={handleTitleSubmit}
-                  autoFocus={initialIsEditing}
-                  maxLength={50}
-                  multiline={true}
-                />
+                <Text style={styles.goalTitle}>{title}</Text>
                 {isExpanded && (
                   <>
                     {goal !== "teamGoal" && (
-                      <Button title="Delete" onPress={handleDelete} />
+                      <View style={styles.buttonRow}>
+                        <Button title="Edit" onPress={handleEdit} />
+                        <Button title="Delete" onPress={handleDelete} />
+                      </View>
                     )}
                     <TouchableOpacity
                       onPress={handleCollapse}
@@ -142,6 +146,33 @@ function GoalCard({
             )}
           </>
         )}
+
+        {/* Edit Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={editModalVisible}
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Edit your goal</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Goal Title"
+                value={tempTitle}
+                onChangeText={setTempTitle}
+                returnKeyType="done"
+                onSubmitEditing={handleTitleSubmit}
+                maxLength={50}
+              />
+              <View style={styles.modalButtonRow}>
+                <Button title="Save" onPress={handleSaveEdit} />
+                <Button title="Cancel" onPress={handleCancelEdit} />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </TouchableOpacity>
   );
@@ -185,6 +216,44 @@ const styles = StyleSheet.create({
   collapseButtonText: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalInput: {
+    width: "100%",
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+    marginBottom: 20,
+    fontSize: 16,
+    padding: 5,
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });
 

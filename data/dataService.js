@@ -38,10 +38,15 @@ export const addGoal = (newGoal) => {
 };
 
 export const updateGoal = (updatedGoal) => {
+  console.log('updateGoal called with:', updatedGoal); // Add this line for debugging
   const index = currentGoals.findIndex(goal => goal.id === updatedGoal.id);
+  console.log('Goal index found:', index); // Add this line for debugging
   if (index !== -1) {
     currentGoals[index] = updatedGoal;
     saveGoalData(currentGoals);
+    console.log('Goal updated:', updatedGoal); // Console log added here
+  } else {
+    console.log('Goal not found:', updatedGoal.id); // Add this line for debugging
   }
   return updatedGoal;
 };
