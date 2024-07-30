@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { DrillLiftContext } from "../context/DrillLiftContext";
-import { updateDrillLiftInWorkout } from '../data/dataService'; // Import the update function
+import { removeDrillLiftFromWorkout } from "../data/dataService"; // Import the remove function
 
 function DrillLiftDetailScreen({ route, navigation }) {
   const { drillLiftId, workoutId } = route.params || {};
@@ -39,16 +39,14 @@ function DrillLiftDetailScreen({ route, navigation }) {
 
   const handleSave = () => {
     if (drillLift) {
-      const updatedDrillLift = {
+      updateDrillLift(workoutId, drillLift.id, {
         value: title,
         sets,
         reps,
         description,
         instructions,
         notes,
-      };
-      updateDrillLift(workoutId, drillLift.id, updatedDrillLift);
-      updateDrillLiftInWorkout(workoutId, drillLift.id, updatedDrillLift); // Update the database
+      });
     }
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -60,6 +58,7 @@ function DrillLiftDetailScreen({ route, navigation }) {
   const handleDelete = () => {
     setModalVisible(false);
     deleteDrillLift(workoutId, drillLiftId);
+    removeDrillLiftFromWorkout(workoutId, drillLiftId); // Remove from active workouts
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
