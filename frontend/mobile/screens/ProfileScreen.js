@@ -23,6 +23,7 @@ function ProfileScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [goalToDelete, setGoalToDelete] = useState(null);
+  const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
     console.log("Fetching initial goals");
@@ -31,8 +32,19 @@ function ProfileScreen() {
     setGoals(initialGoals);
   }, []);
 
-  const profileData = fetchProfileData();
-  const { name, class: className, team, position, height } = profileData;
+  useEffect(() => {
+    const loadProfileData = async () => {
+      const data = await fetchProfileData(1); // Use the correct profile ID
+      setProfileData(data);
+    };
+    loadProfileData();
+  }, []);
+
+  if (!profileData) {
+    return <Text>Loading...</Text>;
+  }
+
+  const { name, class: className, team, position, heightFeet, heightInches } = profileData;
 
   const handleAddGoal = (newGoal) => {
     console.log("handleAddGoal called");
@@ -85,8 +97,8 @@ function ProfileScreen() {
           class={className}
           team={team}
           position={position}
-          feet={height.feet}
-          inches={height.inches}
+          feet={heightFeet}
+          inches={heightInches}
         />
         <KeyboardAwareFlatList
           data={goals}

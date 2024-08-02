@@ -1,4 +1,3 @@
-import dummyProfileData from './dummyProfileData.json';
 import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
 import dummyActiveWorkouts from './dummyActiveWorkouts.json';
@@ -15,8 +14,19 @@ let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
 let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
-export const fetchProfileData = () => {
-  return dummyProfileData;
+const API_URL = 'http://localhost:3000/api/profiles'; // Adjust the URL as needed
+
+export const fetchProfileData = async (profileId) => {
+  try {
+    const response = await fetch(`${API_URL}/${profileId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching profile data:', error);
+    return null;
+  }
 };
 
 export const fetchGoalData = () => {
