@@ -19,6 +19,7 @@ const Profile = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Profile',
+    timestamps: false, // Disable timestamps
   });
   console.log('Profile model defined'); // Debugging line
   return Profile;

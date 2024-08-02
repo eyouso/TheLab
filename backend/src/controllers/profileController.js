@@ -1,6 +1,4 @@
-console.log('Loading models from ../models'); // Debugging line
 import { Profile } from '../models/index.js';
-console.log('Models loaded successfully'); // Debugging line
 
 export const getProfile = async (req, res) => {
   try {
@@ -10,6 +8,7 @@ export const getProfile = async (req, res) => {
     }
     res.json(profile);
   } catch (error) {
+    console.error('Error fetching profile:', error); // Log the full error
     res.status(500).json({ error: 'An error occurred' });
   }
 };
