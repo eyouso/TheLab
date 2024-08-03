@@ -1,15 +1,14 @@
 'use strict';
 import { Model } from 'sequelize';
 
-console.log('Defining Profile model'); // Debugging line
-
 const Profile = (sequelize, DataTypes) => {
   class Profile extends Model {
     static associate(models) {
-      // define association here
+      Profile.belongsTo(models.User, { foreignKey: 'userId' });
     }
   }
   Profile.init({
+    userId: DataTypes.INTEGER,
     name: DataTypes.STRING,
     class: DataTypes.STRING,
     team: DataTypes.STRING,
@@ -19,9 +18,7 @@ const Profile = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Profile',
-    timestamps: false, // Disable timestamps
   });
-  console.log('Profile model defined'); // Debugging line
   return Profile;
 };
 
