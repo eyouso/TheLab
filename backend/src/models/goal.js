@@ -8,12 +8,30 @@ const Goal = (sequelize, DataTypes) => {
     }
   }
   Goal.init({
-    title: DataTypes.STRING,
-    targetDate: DataTypes.DATE,
-    userId: DataTypes.INTEGER,
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    targetDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    goal: {
+      type: DataTypes.ENUM('teamGoal', 'individualGoal'),
+      allowNull: false,
+    },
+    createdby: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   }, {
     sequelize,
     modelName: 'Goal',
+    timestamps: true,
   });
   return Goal;
 };

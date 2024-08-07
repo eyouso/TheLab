@@ -14,11 +14,11 @@ let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
 let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
-const API_URL = 'http://192.168.0.76:3000/api/profiles'; // Adjust the URL as needed
+const API_URL = 'http://192.168.0.76:3000/api'; // Adjust the URL as needed
 
 export const fetchProfileData = async (profileId) => {
   try {
-    const response = await fetch(`${API_URL}/${profileId}`);
+    const response = await fetch(`${API_URL}/profiles/${profileId}`);
     if (!response.ok) {
       throw new Error('Failed to fetch profile data');
     }
@@ -29,8 +29,22 @@ export const fetchProfileData = async (profileId) => {
   }
 };
 
-export const fetchGoalData = () => {
-  return currentGoals;
+export const fetchGoalsByUserId = async (userId) => {
+  const url = `${API_URL}/users/${userId}/goals`;
+  console.log('Fetching goals from URL:', url); // Debugging line
+  try {
+    const response = await fetch(url);
+    console.log('Response status:', response.status); // Debugging line
+    if (!response.ok) {
+      throw new Error(`Failed to fetch goals: ${response.status} ${response.statusText}`);
+    }
+    const goals = await response.json();
+    console.log('Fetched goals:', goals); // Debugging line
+    return goals;
+  } catch (error) {
+    console.error('Error fetching goals:', error);
+    return [];
+  }
 };
 
 export const saveGoalData = (goals) => {

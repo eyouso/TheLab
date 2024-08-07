@@ -15,7 +15,7 @@ import NavBar from "../components/NavBar";
 import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
-import { fetchProfileData, fetchGoalData, addGoal, updateGoal, deleteGoal } from "../data/dataService";
+import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal } from "../data/dataService";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -26,10 +26,13 @@ function ProfileScreen() {
   const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
-    console.log("Fetching initial goals");
-    const initialGoals = fetchGoalData();
-    console.log("Initial goals:", initialGoals);
-    setGoals(initialGoals);
+    const loadGoals = async () => {
+      const userId = 2; // Use the correct user ID
+      const fetchedGoals = await fetchGoalsByUserId(userId);
+      console.log('Fetched goals:', fetchedGoals); // Debugging line
+      setGoals(fetchedGoals);
+    };
+    loadGoals();
   }, []);
 
   useEffect(() => {
@@ -107,8 +110,9 @@ function ProfileScreen() {
               <GoalCard
                 goalId={item.id} // Pass the correct goal ID
                 goal={item.goal} // Pass the goal type
-                goalTitle={item.goalTitle}
-                goalDescription={item.goalDescription}
+                goalTitle={item.title}
+                goalDescription={item.description}
+                targetDate={item.targetDate}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
                 saveGoal={handleSaveGoal}
@@ -116,11 +120,11 @@ function ProfileScreen() {
                 expandGoal={() => expandGoal(item.id)}
                 collapseGoal={() => collapseGoal(item.id)}
                 createdAt={item.createdAt}
-                creator={item.creator}
+                creator={item.createdby}
               />
             </View>
           )}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           extraScrollHeight={Platform.OS === "ios" ? 20 : 0}
           enableOnAndroid={true}
           ListFooterComponent={
