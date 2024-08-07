@@ -39,8 +39,9 @@ const loadModels = async () => {
   for (const file of files) {
     console.log('Loading model file:', file); // Debugging line
     const modelPath = pathToFileURL(path.join(__dirname, file)).href;
-    const model = (await import(modelPath)).default(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
+    const { default: model } = await import(modelPath);
+    const initializedModel = model(sequelize, Sequelize.DataTypes);
+    db[initializedModel.name] = initializedModel;
   }
 
   console.log('Models loaded:', Object.keys(db)); // Debugging line
@@ -57,5 +58,4 @@ await loadModels();
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-export { db };
-export const Profile = db.Profile;
+export default db;
