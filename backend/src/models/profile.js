@@ -1,25 +1,53 @@
 'use strict';
-import { Model } from 'sequelize';
 
-const Profile = (sequelize, DataTypes) => {
-  class Profile extends Model {
-    static associate(models) {
-      Profile.belongsTo(models.User, { foreignKey: 'userId' });
+const profile = (sequelize, DataTypes) => {
+  const Profile = sequelize.define('Profile', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    class: {
+      type: DataTypes.STRING
+    },
+    team: {
+      type: DataTypes.STRING
+    },
+    position: {
+      type: DataTypes.STRING
+    },
+    heightFeet: {
+      type: DataTypes.INTEGER
+    },
+    heightInches: {
+      type: DataTypes.INTEGER
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false
     }
-  }
-  Profile.init({
-    userId: DataTypes.INTEGER,
-    name: DataTypes.STRING,
-    class: DataTypes.STRING,
-    team: DataTypes.STRING,
-    position: DataTypes.STRING,
-    heightFeet: DataTypes.INTEGER,
-    heightInches: DataTypes.INTEGER,
-  }, {
-    sequelize,
-    modelName: 'Profile',
   });
+
+  Profile.associate = models => {
+    Profile.belongsTo(models.User, {
+      foreignKey: 'userId',
+      onDelete: 'CASCADE'
+    });
+  };
+
   return Profile;
 };
 
-export default Profile;
+export default profile;

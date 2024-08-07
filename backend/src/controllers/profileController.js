@@ -1,4 +1,6 @@
-import { Profile } from '../models/index.js';
+import { db } from '../models/index.js';
+
+const { Profile } = db;
 
 export const getProfile = async (req, res) => {
   try {
