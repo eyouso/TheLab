@@ -28,10 +28,19 @@ function ProfileScreen() {
 
   useEffect(() => {
     const loadGoals = async () => {
-      const userId = 2; // Use the correct user ID
-      const fetchedGoals = await fetchGoalsByUserId(userId);
-      console.log('Fetched goals:', fetchedGoals); // Debugging line
-      setGoals(fetchedGoals);
+      try {
+        const storedGoals = await AsyncStorage.getItem('goals');
+        if (storedGoals) {
+          setGoals(JSON.parse(storedGoals));
+        } else {
+          const userId = 2; // Use the correct user ID
+          const fetchedGoals = await fetchGoalsByUserId(userId);
+          await AsyncStorage.setItem('goals', JSON.stringify(fetchedGoals));
+          setGoals(fetchedGoals);
+        }
+      } catch (error) {
+        console.error('Failed to load goals', error);
+      }
     };
     loadGoals();
   }, []);
@@ -53,6 +62,20 @@ function ProfileScreen() {
     };
     loadProfileData();
   }, []);
+
+  useEffect(() => {
+    const saveGoalsToStorage = async () => {
+      try {
+        await AsyncStorage.setItem('goals', JSON.stringify(goals));
+      } catch (error) {
+        console.error('Failed to save goals to storage', error);
+      }
+    };
+
+    if (goals.length > 0) {
+      saveGoalsToStorage();
+    }
+  }, [goals]);
 
   if (!profileData) {
     return <Text>Loading...</Text>;
