@@ -14,7 +14,7 @@ let currentGoals = [...dummyGoalData];
 let currentAlbums = { ...dummyAlbums };
 let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
-const API_URL = 'http://192.168.0.76:3000/api'; // Adjust the URL as needed
+const API_URL = 'http://192.168.12.179:3000/api'; // Adjust the URL as needed
 
 export const fetchProfileData = async (profileId) => {
   try {
