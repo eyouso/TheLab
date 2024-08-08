@@ -15,6 +15,7 @@ import NavBar from "../components/NavBar";
 import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal } from "../data/dataService";
 
 function ProfileScreen() {
@@ -37,8 +38,18 @@ function ProfileScreen() {
 
   useEffect(() => {
     const loadProfileData = async () => {
-      const data = await fetchProfileData(1); // Use the correct profile ID
-      setProfileData(data);
+      try {
+        const storedProfileData = await AsyncStorage.getItem('profileData');
+        if (storedProfileData) {
+          setProfileData(JSON.parse(storedProfileData));
+        } else {
+          const data = await fetchProfileData(1); // Use the correct profile ID
+          await AsyncStorage.setItem('profileData', JSON.stringify(data));
+          setProfileData(data);
+        }
+      } catch (error) {
+        console.error('Failed to load profile data', error);
+      }
     };
     loadProfileData();
   }, []);
