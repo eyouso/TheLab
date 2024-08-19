@@ -26,27 +26,55 @@ function ProfileScreen() {
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [profileData, setProfileData] = useState(null);
 
+  // Load goals from local storage first, then from the backend
   useEffect(() => {
     const loadGoals = async () => {
-      const userId = 2; // Use the correct user ID
-      const fetchedGoals = await fetchGoalsByUserId(userId);
-      console.log('Fetched goals:', fetchedGoals); // Debugging line to check fetched data
-      setGoals(fetchedGoals);
+      try {
+        const storedGoals = await AsyncStorage.getItem('goals');
+        if (storedGoals) {
+          console.log('Loaded goals from AsyncStorage:', storedGoals);
+          setGoals(JSON.parse(storedGoals));
+        } else {
+          const userId = 2; // Use the correct user ID
+          const fetchedGoals = await fetchGoalsByUserId(userId);
+          setGoals(fetchedGoals);
+
+          // Store goals in AsyncStorage for future use
+          await AsyncStorage.setItem('goals', JSON.stringify(fetchedGoals));
+        }
+      } catch (error) {
+        console.error('Failed to load goals:', error);
+      }
     };
     loadGoals();
   }, []);
 
+  // Sync goals to AsyncStorage whenever the goals state changes
+  useEffect(() => {
+    const saveGoalsToStorage = async () => {
+      try {
+        await AsyncStorage.setItem('goals', JSON.stringify(goals));
+        console.log('Saved goals to AsyncStorage');
+      } catch (error) {
+        console.error('Failed to save goals to AsyncStorage', error);
+      }
+    };
+
+    if (goals.length > 0) {
+      saveGoalsToStorage();
+    }
+  }, [goals]);
+
+  // Load profile data from AsyncStorage or server
   useEffect(() => {
     const loadProfileData = async () => {
       try {
         const storedProfileData = await AsyncStorage.getItem('profileData');
         if (storedProfileData) {
-          console.log('Loaded profile data from AsyncStorage:', storedProfileData); // Debugging log
           setProfileData(JSON.parse(storedProfileData));
         } else {
           const data = await fetchProfileData(1); // Use the correct profile ID
           await AsyncStorage.setItem('profileData', JSON.stringify(data));
-          console.log('Fetched profile data from API:', data); // Debugging log
           setProfileData(data);
         }
       } catch (error) {
@@ -62,43 +90,43 @@ function ProfileScreen() {
 
   const { name, class: className, team, position, heightFeet, heightInches } = profileData;
 
-  const handleAddGoal = (newGoal) => {
-    console.log("handleAddGoal called");
-    const addedGoal = addGoal(newGoal); // Use addGoal from dataService
-    console.log("Added goal:", addedGoal);
-    setGoals((prevGoals) => {
-      const goalExists = prevGoals.some(goal => goal.id === addedGoal.id);
-      if (!goalExists) {
-        return [...prevGoals, addedGoal];
-      }
-      return prevGoals;
-    });
+  // Handle adding a new goal locally and syncing with the server
+  const handleAddGoal = async (newGoal) => {
+    try {
+      const addedGoal = await addGoal(newGoal); // Sync via dataService
+      setGoals((prevGoals) => [...prevGoals, addedGoal]);
+    } catch (error) {
+      console.error("Failed to sync new goal to the server:", error);
+    }
   };
 
-  const handleSaveGoal = (goal) => {
-    console.log('Saving goal:', goal); // Debugging log
-    const updatedGoal = updateGoal(goal);
-    setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+  const handleSaveGoal = async (goal) => {
+    try {
+      const updatedGoal = await updateGoal(goal); // Sync via dataService
+      setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+    } catch (error) {
+      console.error("Failed to sync updated goal to the server:", error);
+    }
   };
 
-  const handleDeleteGoal = (id) => {
-    console.log('Deleting goal with id:', id); // Debugging log
-    const updatedGoals = deleteGoal(id);
-    setGoals(updatedGoals);
+  const handleDeleteGoal = async (id) => {
+    try {
+      const updatedGoals = await deleteGoal(id, 2); // Assuming userId is 2
+      setGoals(updatedGoals);
+    } catch (error) {
+      console.error("Failed to sync deleted goal to the server:", error);
+    }
   };
 
   const expandGoal = (id) => {
-    console.log('Expanding goal with id:', id); // Debugging log
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));
   };
 
   const collapseGoal = (id) => {
-    console.log('Collapsing goal with id:', id); // Debugging log
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g)));
   };
 
   const handleDeletePress = (goalId) => {
-    console.log('Delete button pressed for goal id:', goalId); // Debugging log
     setGoalToDelete(goalId);
     setDeleteModalVisible(true);
   };
@@ -126,9 +154,9 @@ function ProfileScreen() {
           renderItem={({ item }) => (
             <View style={styles.goalCardContainer}>
               <GoalCard
-                goalId={item.id} // Pass the correct goal ID
+                goalId={item.id} // Pass the correct goal ID, which is UUID
                 goal={item.goal} // Pass the goal type
-                goalTitle={item.title} // Ensure title is passed correctly
+                goalTitle={item.goalTitle} // Ensure title is passed correctly
                 targetDate={item.targetDate}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
@@ -137,11 +165,11 @@ function ProfileScreen() {
                 expandGoal={() => expandGoal(item.id)}
                 collapseGoal={() => collapseGoal(item.id)}
                 createdAt={item.createdAt}
-                creator={item.createdby}
+                creator={item.creator}
               />
             </View>
           )}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id.toString()} // Use UUID as key
           extraScrollHeight={Platform.OS === "ios" ? 20 : 0}
           enableOnAndroid={true}
           ListFooterComponent={
@@ -188,7 +216,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   flatListContent: {
-    paddingBottom: 20, // Adjust this value to add space at the bottom
+    paddingBottom: 20,
   },
   modalView: {
     margin: 20,
