@@ -30,7 +30,7 @@ function ProfileScreen() {
     const loadGoals = async () => {
       const userId = 2; // Use the correct user ID
       const fetchedGoals = await fetchGoalsByUserId(userId);
-      console.log('Fetched goals:', fetchedGoals); // Debugging line
+      console.log('Fetched goals:', fetchedGoals); // Debugging line to check fetched data
       setGoals(fetchedGoals);
     };
     loadGoals();
@@ -41,10 +41,12 @@ function ProfileScreen() {
       try {
         const storedProfileData = await AsyncStorage.getItem('profileData');
         if (storedProfileData) {
+          console.log('Loaded profile data from AsyncStorage:', storedProfileData); // Debugging log
           setProfileData(JSON.parse(storedProfileData));
         } else {
           const data = await fetchProfileData(1); // Use the correct profile ID
           await AsyncStorage.setItem('profileData', JSON.stringify(data));
+          console.log('Fetched profile data from API:', data); // Debugging log
           setProfileData(data);
         }
       } catch (error) {
@@ -74,24 +76,29 @@ function ProfileScreen() {
   };
 
   const handleSaveGoal = (goal) => {
+    console.log('Saving goal:', goal); // Debugging log
     const updatedGoal = updateGoal(goal);
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
   };
 
   const handleDeleteGoal = (id) => {
+    console.log('Deleting goal with id:', id); // Debugging log
     const updatedGoals = deleteGoal(id);
     setGoals(updatedGoals);
   };
 
   const expandGoal = (id) => {
+    console.log('Expanding goal with id:', id); // Debugging log
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));
   };
 
   const collapseGoal = (id) => {
+    console.log('Collapsing goal with id:', id); // Debugging log
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g)));
   };
 
   const handleDeletePress = (goalId) => {
+    console.log('Delete button pressed for goal id:', goalId); // Debugging log
     setGoalToDelete(goalId);
     setDeleteModalVisible(true);
   };
@@ -121,8 +128,7 @@ function ProfileScreen() {
               <GoalCard
                 goalId={item.id} // Pass the correct goal ID
                 goal={item.goal} // Pass the goal type
-                goalTitle={item.title}
-                goalDescription={item.description}
+                goalTitle={item.title} // Ensure title is passed correctly
                 targetDate={item.targetDate}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
@@ -196,7 +202,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     position: 'absolute',
-    bottom: '50%', // Adjust this value to lower the modal
+    bottom: '50%',
     left: '10%',
     right: '10%',
   },

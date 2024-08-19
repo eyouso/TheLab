@@ -17,7 +17,7 @@ function AddGoalModal({ visible, onClose, onAdd }) {
     if (goalTitle.trim()) {
       const newGoal = {
         id: String(Date.now()), // unique id based on timestamp
-        goal: 'newGoal',
+        goal: 'individualGoal',
         goalTitle,
         createdAt: new Date().toISOString(),
         creator: 'You',
