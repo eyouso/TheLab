@@ -10,13 +10,12 @@ import {
   Modal,
 } from "react-native";
 import Colors from "../constants/colors";
-import { updateGoal } from "../data/dataService"; // Import updateGoal function
 
 function GoalCard({
-  goalId, // Changed from goal to goalId to be more explicit
-  goal, // Add goal type to differentiate between team and individual goals
+  goalId, 
+  goal, 
   goalTitle,
-  saveGoal,
+  saveGoal, // This is now passed from ProfileScreen.js
   deleteGoal,
   isEditing: initialIsEditing,
   isExpanded: initialIsExpanded,
@@ -41,7 +40,6 @@ function GoalCard({
   }, [initialIsEditing, initialIsExpanded]);
 
   useEffect(() => {
-    console.log("Received goalTitle:", goalTitle);
     setTitle(goalTitle);
   }, [goalTitle]);
 
@@ -69,16 +67,18 @@ function GoalCard({
 
   const handleSaveEdit = () => {
     const updatedGoal = {
-      id: goalId,
-      goalTitle: tempTitle,
-      createdAt,
-      creator,
+      id: goalId,                   // Ensure goalId is passed
+      goalTitle: tempTitle,         // New title after editing
+      goal,                         // Pass goal type
+      createdAt,                    // Pass createdAt for consistency
+      creator: creator || "You",    // Pass creator for consistency
     };
-    console.log('Updated Goal before saving:', updatedGoal); // Debugging log
-    updateGoal(updatedGoal); // Update the goal in the mock database
-    setTitle(tempTitle);
+  
+    console.log('Updated Goal before saving:', updatedGoal);
+    saveGoal(updatedGoal);  // Call saveGoal with the updated goal object
     setEditModalVisible(false);
   };
+  
 
   const handleCancelEdit = () => {
     setTempTitle(title); // Reset the temp title
@@ -90,7 +90,6 @@ function GoalCard({
     day: "2-digit",
     year: "2-digit",
   });
-  
 
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={1}>

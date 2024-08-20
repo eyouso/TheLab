@@ -40,7 +40,15 @@ export const addGoal = async (req, res) => {
 // Update a goal for a user
 export const updateGoal = async (req, res) => {
   try {
-    const goal = await Goal.findOne({ where: { id: req.params.goalId, userId: req.params.userId } });
+    const { userId } = req.params;
+    const goalId = req.params.goalId;
+
+    // Ensure userId is not undefined
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+
+    const goal = await Goal.findOne({ where: { id: goalId, userId: userId } });
     if (!goal) {
       return res.status(404).json({ error: 'Goal not found' });
     }
@@ -57,6 +65,7 @@ export const updateGoal = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating the goal' });
   }
 };
+
 
 // Delete a goal for a user
 export const deleteGoal = async (req, res) => {

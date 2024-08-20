@@ -1,8 +1,6 @@
-import dummyGoalData from './dummyGoalData.json';
 import dummyAlbums from './dummyAlbums.json';
 import dummyActiveWorkouts from './dummyActiveWorkouts.json';
 
-// Simulate unique ID generation
 const generateId = () => {
   const id = Math.random().toString(36).substr(2, 9);
   console.log(`Generated ID: ${id}`);
@@ -10,7 +8,7 @@ const generateId = () => {
 };
 
 // Maintain a current state of goals, albums, and active workouts in memory
-let currentGoals = [...dummyGoalData];
+let currentGoals = [];
 let currentAlbums = { ...dummyAlbums };
 let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
@@ -41,6 +39,11 @@ export const fetchGoalsByUserId = async (userId) => {
     }
     const goals = await response.json();
     console.log('Fetched goals:', goals); // Debugging line
+    
+    // Update currentGoals with the fetched goals
+    currentGoals = [...goals];
+    saveGoalData(currentGoals); // Save the goals locally (to AsyncStorage, for example)
+    
     return goals;
   } catch (error) {
     console.error('Error fetching goals:', error);
@@ -82,11 +85,11 @@ export const addGoalToServer = async (goal) => {
   }
 };
 
-
-
 // Update a goal on the backend
 export const updateGoalOnServer = async (goal) => {
   const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;
+  console.log("Sending goal data to server for update:", goal); // Check goal data
+
   try {
     const response = await fetch(url, {
       method: 'PUT',
@@ -95,9 +98,11 @@ export const updateGoalOnServer = async (goal) => {
       },
       body: JSON.stringify(goal),
     });
+
     if (!response.ok) {
       throw new Error(`Failed to update goal: ${response.status} ${response.statusText}`);
     }
+
     const updatedGoal = await response.json();
     console.log('Goal updated on server:', updatedGoal);
     return updatedGoal;
@@ -125,7 +130,6 @@ export const deleteGoalFromServer = async (goalId, userId) => {
   }
 };
 
-
 // Save goals locally and sync with the server when needed
 export const saveGoalData = (goals) => {
   console.log('Saving goals locally:', JSON.stringify(goals, null, 2));
@@ -136,13 +140,18 @@ export const saveGoalData = (goals) => {
 export const addGoal = async (newGoal) => {
   newGoal.id = generateId();
   console.log('Adding new goal locally:', newGoal);
+
   currentGoals.push(newGoal);
   saveGoalData(currentGoals);
 
   try {
-    // Sync with the server
-    const addedGoal = await addGoalToServer(newGoal);
+    const addedGoal = await addGoalToServer(newGoal); // Sync with server
     console.log('Goal successfully synced to server:', addedGoal);
+
+    // Replace local goal with server response to ensure consistency
+    currentGoals = currentGoals.map(goal => (goal.id === newGoal.id ? addedGoal : goal));
+    saveGoalData(currentGoals);
+
     return addedGoal;
   } catch (error) {
     console.error('Failed to sync new goal to the server:', error);
@@ -152,16 +161,27 @@ export const addGoal = async (newGoal) => {
 
 // Update a goal locally and sync with the server
 export const updateGoal = async (updatedGoal) => {
+  console.log('Looking for goal with id:', updatedGoal.id);
+
   const index = currentGoals.findIndex(goal => goal.id === updatedGoal.id);
+  
   if (index !== -1) {
     currentGoals[index] = updatedGoal;
-    saveGoalData(currentGoals);
-    console.log('Goal updated locally:', updatedGoal);
+    saveGoalData(currentGoals); // Save the updated goals locally
 
     try {
+      if (!updatedGoal.userId) {
+        console.error("User ID is missing for the goal update");
+        return null;
+      }
+
       // Sync with the server
       const syncedGoal = await updateGoalOnServer(updatedGoal);
       console.log('Goal successfully synced to server:', syncedGoal);
+
+      currentGoals[index] = syncedGoal; // Replace local goal with the synced one
+      saveGoalData(currentGoals);
+
       return syncedGoal;
     } catch (error) {
       console.error('Failed to sync updated goal to the server:', error);
@@ -169,9 +189,11 @@ export const updateGoal = async (updatedGoal) => {
     }
   } else {
     console.error('Goal not found locally:', updatedGoal.id);
+    console.log('Current goals:', JSON.stringify(currentGoals, null, 2)); // Log the current goals for debugging
     return null;
   }
 };
+
 
 // Delete a goal locally and sync with the server
 export const deleteGoal = async (goalId, userId) => {
@@ -180,8 +202,7 @@ export const deleteGoal = async (goalId, userId) => {
   console.log('Goal deleted locally:', goalId);
 
   try {
-    // Sync with the server
-    await deleteGoalFromServer(goalId, userId);
+    await deleteGoalFromServer(goalId, userId); // Sync with server
     console.log('Goal successfully deleted from server:', goalId);
   } catch (error) {
     console.error('Failed to delete goal from server:', error);

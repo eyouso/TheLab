@@ -133,12 +133,24 @@ function ProfileScreen() {
 
   const handleSaveGoal = async (goal) => {
     try {
-      const updatedGoal = await updateGoal(goal); // Sync via dataService
-      setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+      const updatedGoal = {
+        ...goal,
+        userId: goal.userId || currentUserId, // Ensure userId is present
+      };
+      
+      const syncedGoal = await updateGoal(updatedGoal); // Sync via dataService
+      if (syncedGoal) {
+        setGoals((prevGoals) => prevGoals.map((g) => (g.id === syncedGoal.id ? syncedGoal : g)));
+      }
     } catch (error) {
       console.error("Failed to sync updated goal to the server:", error);
     }
   };
+  
+  
+  
+  
+  
 
   const handleDeleteGoal = async (goalId) => {
     try {
