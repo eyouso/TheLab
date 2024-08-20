@@ -16,7 +16,7 @@ import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal, addGoalToServer } from "../data/dataService";
+import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal, addGoalToServer, deleteGoalFromServer } from "../data/dataService";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -30,36 +30,38 @@ function ProfileScreen() {
   useEffect(() => {
     const loadGoals = async () => {
       try {
-        const storedGoals = await AsyncStorage.getItem('goals');
-        let localGoals = [];
-        if (storedGoals) {
+        const storedGoalsJson = await AsyncStorage.getItem('goals');
+        let storedGoals = [];
+        if (storedGoalsJson) {
+          storedGoals = JSON.parse(storedGoalsJson);
           console.log('Loaded goals from AsyncStorage:', storedGoals);
-          localGoals = JSON.parse(storedGoals);
+          setGoals(storedGoals);
         }
   
-        const userId = 2;
+        // Fetch goals from the server
+        const userId = 2; // Replace with correct user ID
         const fetchedGoals = await fetchGoalsByUserId(userId);
   
-        // Normalize server-fetched goals to match the local structure
-        const normalizedFetchedGoals = fetchedGoals.map(goal => ({
-          ...goal,
-          goalTitle: goal.title, // Ensure that `goalTitle` is always set
-          targetDate: goal.targetDate || null, // Handle nullable `targetDate`
-        }));
+        // Filter out fetched goals that are already in local storage
+        const newGoalsFromServer = fetchedGoals.filter(
+          fetchedGoal => !storedGoals.some(localGoal => localGoal.id === fetchedGoal.id)
+        );
   
-        const combinedGoals = [...localGoals, ...normalizedFetchedGoals];
+        // Combine local goals with new server goals
+        const combinedGoals = [...storedGoals, ...newGoalsFromServer];
   
+        // Update the state and AsyncStorage with the combined goals
         setGoals(combinedGoals);
-  
-        // Save combined goals to AsyncStorage
         await AsyncStorage.setItem('goals', JSON.stringify(combinedGoals));
-  
+        console.log('Saved combined goals to AsyncStorage');
       } catch (error) {
-        console.error('Failed to load goals:', error);
+        console.error('Failed to load or sync goals:', error);
       }
     };
+    
     loadGoals();
   }, []);
+  
   
   
 
@@ -123,14 +125,21 @@ function ProfileScreen() {
     }
   };
 
-  const handleDeleteGoal = async (id) => {
+  const handleDeleteGoal = async (goalId) => {
     try {
-      const updatedGoals = await deleteGoal(id, 2); // Assuming userId is 2
-      setGoals(updatedGoals);
+      // Delete the goal locally first
+      const updatedLocalGoals = goals.filter(goal => goal.id !== goalId);
+      setGoals(updatedLocalGoals); // Update the UI immediately
+      await AsyncStorage.setItem('goals', JSON.stringify(updatedLocalGoals)); // Save updated goals to AsyncStorage
+  
+      // Sync the deletion with the server
+      await deleteGoalFromServer(goalId, 2); // Assuming userId is 2
+      console.log('Goal successfully deleted from server:', goalId);
     } catch (error) {
-      console.error("Failed to sync deleted goal to the server:", error);
+      console.error('Failed to delete goal from server:', error);
     }
   };
+  
 
   const expandGoal = (id) => {
     setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));

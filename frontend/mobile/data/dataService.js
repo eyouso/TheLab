@@ -117,13 +117,14 @@ export const deleteGoalFromServer = async (goalId, userId) => {
     if (!response.ok) {
       throw new Error(`Failed to delete goal: ${response.status} ${response.statusText}`);
     }
-    console.log('Goal deleted from server:', goalId);
+    console.log('Goal successfully deleted from server:', goalId);
     return true;
   } catch (error) {
     console.error('Failed to delete goal from server:', error);
-    throw error;
+    throw error; // Ensure the error is thrown so it can be caught in the calling function
   }
 };
+
 
 // Save goals locally and sync with the server when needed
 export const saveGoalData = (goals) => {
