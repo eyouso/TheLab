@@ -114,12 +114,22 @@ function ProfileScreen() {
   // Handle adding a new goal locally and syncing with the server
   const handleAddGoal = async (newGoal) => {
     try {
-      const addedGoal = await addGoal(newGoal); // Sync via dataService
-      setGoals((prevGoals) => [...prevGoals, addedGoal]);
+      const userId = 2; // Fetch or set the correct user ID here, if dynamic use a state or prop
+  
+      const goalToSend = {
+        ...newGoal,
+        userId, // Include the userId in the goal object
+        targetDate: newGoal.targetDate || null, // Ensure targetDate is null if not provided
+      };
+  
+      const addedGoal = await addGoal(goalToSend); // Sync via dataService
+      setGoals((prevGoals) => [...prevGoals, addedGoal]); // Update the local state with the new goal
     } catch (error) {
       console.error("Failed to sync new goal to the server:", error);
     }
   };
+  
+  
 
   const handleSaveGoal = async (goal) => {
     try {

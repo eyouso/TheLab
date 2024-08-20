@@ -14,7 +14,7 @@ const Goal = (sequelize, DataTypes) => {
     },
     targetDate: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       type: DataTypes.INTEGER,

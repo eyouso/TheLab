@@ -19,7 +19,7 @@ export const getGoalsByUserId = async (req, res) => {
 
 // Add a new goal for a user
 export const addGoal = async (req, res) => {
-  const { title, goal, targetDate, createdby } = req.body;
+  const { title, goal, targetDate, createdby, userId } = req.body; // Get userId from request body
   try {
     const newGoal = await Goal.create({
       id: uuidv4(),  // Generate a proper UUID for the new goal
@@ -27,7 +27,7 @@ export const addGoal = async (req, res) => {
       goal,
       targetDate: targetDate || null,  // Allow null for targetDate
       createdby,
-      userId: req.params.userId
+      userId: userId || req.params.userId // Fallback to req.params.userId if userId isn't in the body
     });
     res.status(201).json(newGoal);
   } catch (error) {
@@ -35,6 +35,7 @@ export const addGoal = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while adding the goal' });
   }
 };
+
 
 // Update a goal for a user
 export const updateGoal = async (req, res) => {
