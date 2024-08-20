@@ -51,13 +51,24 @@ export const fetchGoalsByUserId = async (userId) => {
 // Add a new goal to the backend
 export const addGoalToServer = async (goal) => {
   const url = `${API_URL}/users/${goal.userId}/goals`;
+
+  // Ensure all required fields are set before sending to the server
+  const goalData = {
+    title: goal.goalTitle, // Map `goalTitle` to `title`
+    createdby: goal.creator, // Ensure `createdby` is properly set
+    targetDate: goal.targetDate || null, // Handle nullable `targetDate`
+    goal: goal.goal, // Keep other fields as they are
+    createdAt: goal.createdAt,
+    userId: goal.userId,
+  };
+
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(goal),
+      body: JSON.stringify(goalData),
     });
     if (!response.ok) {
       throw new Error(`Failed to add goal: ${response.status} ${response.statusText}`);
@@ -70,6 +81,8 @@ export const addGoalToServer = async (goal) => {
     throw error;
   }
 };
+
+
 
 // Update a goal on the backend
 export const updateGoalOnServer = async (goal) => {

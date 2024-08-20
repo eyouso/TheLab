@@ -16,7 +16,7 @@ import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal } from "../data/dataService";
+import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal, addGoalToServer } from "../data/dataService";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -31,23 +31,37 @@ function ProfileScreen() {
     const loadGoals = async () => {
       try {
         const storedGoals = await AsyncStorage.getItem('goals');
+        let localGoals = [];
         if (storedGoals) {
           console.log('Loaded goals from AsyncStorage:', storedGoals);
-          setGoals(JSON.parse(storedGoals));
-        } else {
-          const userId = 2; // Use the correct user ID
-          const fetchedGoals = await fetchGoalsByUserId(userId);
-          setGoals(fetchedGoals);
-
-          // Store goals in AsyncStorage for future use
-          await AsyncStorage.setItem('goals', JSON.stringify(fetchedGoals));
+          localGoals = JSON.parse(storedGoals);
         }
+  
+        const userId = 2;
+        const fetchedGoals = await fetchGoalsByUserId(userId);
+  
+        // Normalize server-fetched goals to match the local structure
+        const normalizedFetchedGoals = fetchedGoals.map(goal => ({
+          ...goal,
+          goalTitle: goal.title, // Ensure that `goalTitle` is always set
+          targetDate: goal.targetDate || null, // Handle nullable `targetDate`
+        }));
+  
+        const combinedGoals = [...localGoals, ...normalizedFetchedGoals];
+  
+        setGoals(combinedGoals);
+  
+        // Save combined goals to AsyncStorage
+        await AsyncStorage.setItem('goals', JSON.stringify(combinedGoals));
+  
       } catch (error) {
         console.error('Failed to load goals:', error);
       }
     };
     loadGoals();
   }, []);
+  
+  
 
   // Sync goals to AsyncStorage whenever the goals state changes
   useEffect(() => {
