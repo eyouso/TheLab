@@ -30,37 +30,42 @@ function ProfileScreen() {
   useEffect(() => {
     const loadGoals = async () => {
       try {
-        const storedGoalsJson = await AsyncStorage.getItem('goals');
-        let storedGoals = [];
-        if (storedGoalsJson) {
-          storedGoals = JSON.parse(storedGoalsJson);
-          console.log('Loaded goals from AsyncStorage:', storedGoals);
-          setGoals(storedGoals);
-        }
+        const storedGoals = await AsyncStorage.getItem('goals');
+        let parsedStoredGoals = storedGoals ? JSON.parse(storedGoals) : [];
   
-        // Fetch goals from the server
-        const userId = 2; // Replace with correct user ID
+        const userId = 2;
         const fetchedGoals = await fetchGoalsByUserId(userId);
   
-        // Filter out fetched goals that are already in local storage
-        const newGoalsFromServer = fetchedGoals.filter(
-          fetchedGoal => !storedGoals.some(localGoal => localGoal.id === fetchedGoal.id)
-        );
+        // Normalize the fetched goals to have a consistent structure
+        const normalizedFetchedGoals = fetchedGoals.map(goal => ({
+          ...goal,
+          goalTitle: goal.title || goal.goalTitle, // Ensure goalTitle exists
+        }));
   
-        // Combine local goals with new server goals
-        const combinedGoals = [...storedGoals, ...newGoalsFromServer];
+        // Combine local and fetched goals (avoiding duplicates)
+        const combinedGoals = [...parsedStoredGoals, ...normalizedFetchedGoals];
   
-        // Update the state and AsyncStorage with the combined goals
-        setGoals(combinedGoals);
-        await AsyncStorage.setItem('goals', JSON.stringify(combinedGoals));
+        // Remove duplicates based on goal id
+        const uniqueGoals = combinedGoals.reduce((acc, goal) => {
+          if (!acc.some(g => g.id === goal.id)) {
+            acc.push(goal);
+          }
+          return acc;
+        }, []);
+  
+        setGoals(uniqueGoals);
+  
+        await AsyncStorage.setItem('goals', JSON.stringify(uniqueGoals));
         console.log('Saved combined goals to AsyncStorage');
       } catch (error) {
-        console.error('Failed to load or sync goals:', error);
+        console.error('Failed to load goals:', error);
       }
     };
-    
+  
     loadGoals();
   }, []);
+  
+  
   
   
   
@@ -160,6 +165,16 @@ function ProfileScreen() {
     setGoalToDelete(null);
   };
 
+  const clearGoals = async () => {
+    try {
+      await AsyncStorage.removeItem('goals');
+      console.log('Goals cleared from AsyncStorage');
+    } catch (error) {
+      console.error('Failed to clear goals:', error);
+    }
+  };
+  
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.screen}>
@@ -175,11 +190,12 @@ function ProfileScreen() {
         <KeyboardAwareFlatList
           data={goals}
           renderItem={({ item }) => (
+            console.log('Rendering goal item:', item),
             <View style={styles.goalCardContainer}>
               <GoalCard
                 goalId={item.id} // Pass the correct goal ID, which is UUID
                 goal={item.goal} // Pass the goal type
-                goalTitle={item.goalTitle} // Ensure title is passed correctly
+                goalTitle={item.goalTitle || item.title} // Ensure title is passed correctly
                 targetDate={item.targetDate}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
@@ -198,6 +214,7 @@ function ProfileScreen() {
           ListFooterComponent={
             <View style={styles.addGoalView}>
               <Button title="Add Goal" onPress={() => setIsModalVisible(true)} />
+              <Button title="Clear Goals" onPress={clearGoals} />
             </View>
           }
           contentContainerStyle={styles.flatListContent}
