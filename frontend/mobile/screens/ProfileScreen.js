@@ -28,11 +28,23 @@ function ProfileScreen() {
 
   // Load goals from local storage first, then from the backend
   useEffect(() => {
-    const loadGoals = async () => {
+    const loadLocalGoals = async () => {
       try {
+        // Load goals from AsyncStorage immediately
         const storedGoals = await AsyncStorage.getItem('goals');
         let parsedStoredGoals = storedGoals ? JSON.parse(storedGoals) : [];
   
+        // Set local goals immediately
+        setGoals(parsedStoredGoals);
+  
+        console.log('Loaded local goals from AsyncStorage');
+      } catch (error) {
+        console.error('Failed to load local goals:', error);
+      }
+    };
+  
+    const fetchAndMergeServerGoals = async () => {
+      try {
         const userId = 2;
         const fetchedGoals = await fetchGoalsByUserId(userId);
   
@@ -41,6 +53,10 @@ function ProfileScreen() {
           ...goal,
           goalTitle: goal.title || goal.goalTitle, // Ensure goalTitle exists
         }));
+  
+        // Get the current local goals from state
+        const localGoals = await AsyncStorage.getItem('goals');
+        let parsedStoredGoals = localGoals ? JSON.parse(localGoals) : [];
   
         // Combine local and fetched goals (avoiding duplicates)
         const combinedGoals = [...parsedStoredGoals, ...normalizedFetchedGoals];
@@ -53,17 +69,24 @@ function ProfileScreen() {
           return acc;
         }, []);
   
+        // Update state with the unique combined goals
         setGoals(uniqueGoals);
   
+        // Save the updated goals back to AsyncStorage
         await AsyncStorage.setItem('goals', JSON.stringify(uniqueGoals));
         console.log('Saved combined goals to AsyncStorage');
       } catch (error) {
-        console.error('Failed to load goals:', error);
+        console.error('Failed to fetch and merge server goals:', error);
       }
     };
   
-    loadGoals();
+    // Load local goals first
+    loadLocalGoals();
+  
+    // Then fetch and merge server goals asynchronously
+    fetchAndMergeServerGoals();
   }, []);
+  
   
   // Sync goals to AsyncStorage whenever the goals state changes
   useEffect(() => {
