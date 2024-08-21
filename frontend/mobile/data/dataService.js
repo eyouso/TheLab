@@ -12,6 +12,9 @@ let currentGoals = [];
 let currentAlbums = { ...dummyAlbums };
 let currentActiveWorkouts = [...dummyActiveWorkouts.activeWorkouts];
 
+//temporaty user id
+const userId = 2;
+
 const API_URL = 'http://192.168.0.76:3000/api'; // Adjust the URL as needed
 
 export const fetchProfileData = async (profileId) => {
@@ -28,7 +31,7 @@ export const fetchProfileData = async (profileId) => {
 };
 
 // Fetch goals from the backend
-export const fetchGoalsByUserId = async (userId) => {
+export const fetchGoalsByUserId = async () => {
   const url = `${API_URL}/users/${userId}/goals`;
   console.log('Fetching goals from URL:', url); // Debugging line
   try {
@@ -53,7 +56,7 @@ export const fetchGoalsByUserId = async (userId) => {
 
 // Add a new goal to the backend
 export const addGoalToServer = async (goal) => {
-  const url = `${API_URL}/users/${goal.userId}/goals`;
+  const url = `${API_URL}/users/${userId}/goals`;
 
   // Ensure all required fields are set before sending to the server
   const goalData = {
@@ -62,7 +65,7 @@ export const addGoalToServer = async (goal) => {
     targetDate: goal.targetDate || null, // Handle nullable `targetDate`
     goal: goal.goal, // Keep other fields as they are
     createdAt: goal.createdAt,
-    userId: goal.userId,
+    userId: userId,
   };
 
   try {
@@ -87,7 +90,7 @@ export const addGoalToServer = async (goal) => {
 
 // Update a goal on the backend
 export const updateGoalOnServer = async (goal) => {
-  const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;
+  const url = `${API_URL}/users/${userId}/goals/${goal.id}`;
   console.log("Sending goal data to server for update:", goal); // Check goal data
 
   try {
@@ -113,7 +116,7 @@ export const updateGoalOnServer = async (goal) => {
 };
 
 // Delete a goal from the backend
-export const deleteGoalFromServer = async (goalId, userId) => {
+export const deleteGoalFromServer = async (goalId) => {
   const url = `${API_URL}/users/${userId}/goals/${goalId}`;
   try {
     const response = await fetch(url, {

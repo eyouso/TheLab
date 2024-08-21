@@ -65,11 +65,6 @@ function ProfileScreen() {
     loadGoals();
   }, []);
   
-  
-  
-  
-  
-
   // Sync goals to AsyncStorage whenever the goals state changes
   useEffect(() => {
     const saveGoalsToStorage = async () => {
@@ -129,15 +124,17 @@ function ProfileScreen() {
     }
   };
   
-  
-
   const handleSaveGoal = async (goal) => {
     try {
       const updatedGoal = {
         ...goal,
-        userId: goal.userId || currentUserId, // Ensure userId is present
+        userId: goal.userId || 2, // Hardcoded userId for now
+        title: goal.goalTitle, // Map goalTitle to title for the server
       };
       
+      // Remove goalTitle as it's not needed by the server
+      delete updatedGoal.goalTitle;
+  
       const syncedGoal = await updateGoal(updatedGoal); // Sync via dataService
       if (syncedGoal) {
         setGoals((prevGoals) => prevGoals.map((g) => (g.id === syncedGoal.id ? syncedGoal : g)));
@@ -149,9 +146,6 @@ function ProfileScreen() {
   
   
   
-  
-  
-
   const handleDeleteGoal = async (goalId) => {
     try {
       // Delete the goal locally first
