@@ -15,7 +15,7 @@ function GoalCard({
   goalId, 
   goal, 
   goalTitle,
-  saveGoal, // This is now passed from ProfileScreen.js
+  saveGoal,
   deleteGoal,
   isEditing: initialIsEditing,
   isExpanded: initialIsExpanded,
@@ -24,23 +24,22 @@ function GoalCard({
   createdAt,
   creator,
 }) {
-  const [title, setTitle] = useState(goalTitle);
+  const [title, setTitle] = useState(goalTitle); // Display title
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [isExpanded, setIsExpanded] = useState(initialIsExpanded);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [tempTitle, setTempTitle] = useState(goalTitle);
+  const [tempTitle, setTempTitle] = useState(goalTitle); // Editable title
 
+  // Synchronize isEditing and isExpanded with props
   useEffect(() => {
-    if (initialIsEditing) {
-      setIsEditing(true);
-    }
-    if (initialIsExpanded) {
-      setIsExpanded(true);
-    }
+    setIsEditing(initialIsEditing);
+    setIsExpanded(initialIsExpanded);
   }, [initialIsEditing, initialIsExpanded]);
 
+  // Update title whenever goalTitle prop changes
   useEffect(() => {
     setTitle(goalTitle);
+    setTempTitle(goalTitle); // Keep tempTitle in sync with goalTitle
   }, [goalTitle]);
 
   const handlePress = () => {
@@ -67,22 +66,21 @@ function GoalCard({
 
   const handleSaveEdit = () => {
     const updatedGoal = {
-      id: goalId,                   // Ensure goalId is passed
-      goalTitle: tempTitle,         // New title after editing
-      goal,                         // Pass goal type
-      createdAt,                    // Pass createdAt for consistency
-      creator: creator || "You",    // Pass creator for consistency
+      id: goalId,
+      goalTitle: tempTitle,  // New title after editing
+      goal,
+      createdAt,
+      creator: creator || "You",  // Default to "You" if no creator
     };
-  
-    console.log('Updated Goal before saving:', updatedGoal);
+
     saveGoal(updatedGoal);  // Call saveGoal with the updated goal object
-    setEditModalVisible(false);
+    setTitle(tempTitle);  // Update the title after saving
+    setEditModalVisible(false);  // Close the modal
   };
-  
 
   const handleCancelEdit = () => {
-    setTempTitle(title); // Reset the temp title
-    setEditModalVisible(false);
+    setTempTitle(title);  // Reset the temp title to the current title
+    setEditModalVisible(false);  // Close the modal without saving
   };
 
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {

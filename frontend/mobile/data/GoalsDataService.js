@@ -53,26 +53,46 @@ export const addGoalToServer = async (goal) => {
   };
   
 
-export const updateGoalOnServer = async (goal) => {
-  const url = `${API_URL}/users/${userId}/goals/${goal.id}`;
-  try {
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(goal),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to update goal: ${response.statusText}`);
+  export const updateGoalOnServer = async (goal) => {
+    const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;
+  
+    // Ensure the title field is properly set
+    if (!goal.title) {
+      console.error("Title is missing in the goal object before update:", goal);
+      throw new Error("Goal.title cannot be null");
     }
-    const updatedGoal = await response.json();
-    return updatedGoal;
-  } catch (error) {
-    console.error('Failed to update goal:', error);
-    throw error;
-  }
-};
+  
+    const goalData = {
+      title: goal.title, // Already mapped in handleSaveGoal
+      createdby: goal.createdby || goal.creator, // Ensure createdby is properly set
+      targetDate: goal.targetDate || null, // Handle nullable `targetDate`
+      goal: goal.goal, // Keep other fields as they are
+      createdAt: goal.createdAt,
+      userId: goal.userId,
+    };
+  
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(goalData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update goal: ${response.statusText}`);
+      }
+  
+      const updatedGoal = await response.json();
+      return updatedGoal;
+    } catch (error) {
+      console.error('Failed to update goal:', error);
+      throw error;
+    }
+  };
+  
+  
 
 export const deleteGoalFromServer = async (goalId) => {
   const url = `${API_URL}/users/${userId}/goals/${goalId}`;

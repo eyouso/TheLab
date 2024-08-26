@@ -101,12 +101,29 @@ function ProfileScreen() {
 
   const handleSaveGoal = async (goal) => {
     try {
-      const updatedGoal = await updateGoalOnServer(goal);
-      setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+      const updatedGoal = {
+        ...goal,
+        userId: goal.userId || 2, // Hardcoded userId for now
+        title: goal.goalTitle, // Ensure `goalTitle` is mapped to `title` for the server
+      };
+      
+      // Remove goalTitle as it's not needed by the server, since we have mapped it to `title`
+      delete updatedGoal.goalTitle;
+  
+      console.log("Goal being sent for update:", updatedGoal); // Add this line for debugging
+  
+      const syncedGoal = await updateGoalOnServer(updatedGoal); // Sync via GoalsDataService
+      if (syncedGoal) {
+        setGoals((prevGoals) =>
+          prevGoals.map((g) => (g.id === syncedGoal.id ? syncedGoal : g))
+        );
+      }
     } catch (error) {
       console.error("Failed to sync updated goal to the server:", error);
     }
   };
+  
+  
 
   const handleDeleteGoal = async (goalId) => {
     try {
