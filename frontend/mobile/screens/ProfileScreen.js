@@ -15,8 +15,19 @@ import NavBar from "../components/NavBar";
 import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchProfileData, fetchGoalsByUserId, addGoal, updateGoal, deleteGoal, addGoalToServer, deleteGoalFromServer } from "../data/dataService";
+import {
+  fetchGoalsByUserId,
+  addGoalToServer,
+  updateGoalOnServer,
+  deleteGoalFromServer,
+  loadGoalsFromLocal,
+  saveGoalsToLocal
+} from "../data/GoalsDataService";
+import {
+  fetchProfileData,
+  loadProfileDataFromLocal,
+  saveProfileDataToLocal
+} from "../data/ProfileDataService";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -26,171 +37,98 @@ function ProfileScreen() {
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [profileData, setProfileData] = useState(null);
 
+  // Load profile data from local storage first, then from the backend
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        // Load profile data from local storage
+        const storedProfileData = await loadProfileDataFromLocal();
+        if (storedProfileData) {
+          setProfileData(storedProfileData);
+        } else {
+          // Fetch profile data from the server if not available locally
+          const fetchedProfileData = await fetchProfileData(1); // Assuming profile ID is 1
+          setProfileData(fetchedProfileData);
+        }
+      } catch (error) {
+        console.error('Failed to load profile data:', error);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
   // Load goals from local storage first, then from the backend
   useEffect(() => {
     const loadLocalGoals = async () => {
       try {
-        // Load goals from AsyncStorage immediately
-        const storedGoals = await AsyncStorage.getItem('goals');
-        let parsedStoredGoals = storedGoals ? JSON.parse(storedGoals) : [];
-  
-        // Set local goals immediately
-        setGoals(parsedStoredGoals);
-  
-        console.log('Loaded local goals from AsyncStorage');
+        const storedGoals = await loadGoalsFromLocal();
+        setGoals(storedGoals);
       } catch (error) {
         console.error('Failed to load local goals:', error);
       }
     };
-  
+
     const fetchAndMergeServerGoals = async () => {
       try {
-        const userId = 2;
-        const fetchedGoals = await fetchGoalsByUserId(userId);
-  
-        // Normalize the fetched goals to have a consistent structure
-        const normalizedFetchedGoals = fetchedGoals.map(goal => ({
-          ...goal,
-          goalTitle: goal.title || goal.goalTitle, // Ensure goalTitle exists
-        }));
-  
-        // Get the current local goals from state
-        const localGoals = await AsyncStorage.getItem('goals');
-        let parsedStoredGoals = localGoals ? JSON.parse(localGoals) : [];
-  
-        // Combine local and fetched goals (avoiding duplicates)
-        const combinedGoals = [...parsedStoredGoals, ...normalizedFetchedGoals];
-  
-        // Remove duplicates based on goal id
-        const uniqueGoals = combinedGoals.reduce((acc, goal) => {
-          if (!acc.some(g => g.id === goal.id)) {
-            acc.push(goal);
-          }
-          return acc;
-        }, []);
-  
-        // Update state with the unique combined goals
-        setGoals(uniqueGoals);
-  
-        // Save the updated goals back to AsyncStorage
-        await AsyncStorage.setItem('goals', JSON.stringify(uniqueGoals));
-        console.log('Saved combined goals to AsyncStorage');
+        const fetchedGoals = await fetchGoalsByUserId();
+        setGoals(fetchedGoals);
       } catch (error) {
         console.error('Failed to fetch and merge server goals:', error);
       }
     };
-  
-    // Load local goals first
+
     loadLocalGoals();
-  
-    // Then fetch and merge server goals asynchronously
     fetchAndMergeServerGoals();
   }, []);
-  
-  
-  // Sync goals to AsyncStorage whenever the goals state changes
-  useEffect(() => {
-    const saveGoalsToStorage = async () => {
-      try {
-        await AsyncStorage.setItem('goals', JSON.stringify(goals));
-        console.log('Saved goals to AsyncStorage');
-      } catch (error) {
-        console.error('Failed to save goals to AsyncStorage', error);
-      }
-    };
 
-    if (goals.length > 0) {
-      saveGoalsToStorage();
-    }
-  }, [goals]);
-
-  // Load profile data from AsyncStorage or server
-  useEffect(() => {
-    const loadProfileData = async () => {
-      try {
-        const storedProfileData = await AsyncStorage.getItem('profileData');
-        if (storedProfileData) {
-          setProfileData(JSON.parse(storedProfileData));
-        } else {
-          const data = await fetchProfileData(1); // Use the correct profile ID
-          await AsyncStorage.setItem('profileData', JSON.stringify(data));
-          setProfileData(data);
-        }
-      } catch (error) {
-        console.error('Failed to load profile data', error);
-      }
-    };
-    loadProfileData();
-  }, []);
-
-  if (!profileData) {
-    return <Text>Loading...</Text>;
-  }
-
-  const { name, class: className, team, position, heightFeet, heightInches } = profileData;
-
-  // Handle adding a new goal locally and syncing with the server
   const handleAddGoal = async (newGoal) => {
     try {
-      const userId = 2; // Fetch or set the correct user ID here, if dynamic use a state or prop
-  
       const goalToSend = {
         ...newGoal,
-        userId, // Include the userId in the goal object
-        targetDate: newGoal.targetDate || null, // Ensure targetDate is null if not provided
+        userId: 2, // Ensure that userId is properly set
+        creator: "You", // Assuming this is a fixed value, you can adjust as needed
+        targetDate: newGoal.targetDate || null, // Ensure targetDate is nullable if not provided
       };
   
-      const addedGoal = await addGoal(goalToSend); // Sync via dataService
+      const addedGoal = await addGoalToServer(goalToSend); // Sync with server
       setGoals((prevGoals) => [...prevGoals, addedGoal]); // Update the local state with the new goal
     } catch (error) {
       console.error("Failed to sync new goal to the server:", error);
     }
   };
   
+
   const handleSaveGoal = async (goal) => {
     try {
-      const updatedGoal = {
-        ...goal,
-        userId: goal.userId || 2, // Hardcoded userId for now
-        title: goal.goalTitle, // Map goalTitle to title for the server
-      };
-      
-      // Remove goalTitle as it's not needed by the server
-      delete updatedGoal.goalTitle;
-  
-      const syncedGoal = await updateGoal(updatedGoal); // Sync via dataService
-      if (syncedGoal) {
-        setGoals((prevGoals) => prevGoals.map((g) => (g.id === syncedGoal.id ? syncedGoal : g)));
-      }
+      const updatedGoal = await updateGoalOnServer(goal);
+      setGoals((prevGoals) => prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
     } catch (error) {
       console.error("Failed to sync updated goal to the server:", error);
     }
   };
-  
-  
-  
+
   const handleDeleteGoal = async (goalId) => {
     try {
-      // Delete the goal locally first
       const updatedLocalGoals = goals.filter(goal => goal.id !== goalId);
-      setGoals(updatedLocalGoals); // Update the UI immediately
-      await AsyncStorage.setItem('goals', JSON.stringify(updatedLocalGoals)); // Save updated goals to AsyncStorage
-  
-      // Sync the deletion with the server
-      await deleteGoalFromServer(goalId, 2); // Assuming userId is 2
-      console.log('Goal successfully deleted from server:', goalId);
+      setGoals(updatedLocalGoals);
+      await saveGoalsToLocal(updatedLocalGoals);
+      await deleteGoalFromServer(goalId);
     } catch (error) {
       console.error('Failed to delete goal from server:', error);
     }
   };
-  
 
   const expandGoal = (id) => {
-    setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g)));
+    setGoals((prevGoals) =>
+      prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: true } : g))
+    );
   };
 
   const collapseGoal = (id) => {
-    setGoals((prevGoals) => prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g)));
+    setGoals((prevGoals) =>
+      prevGoals.map((g) => (g.id === id ? { ...g, isExpanded: false } : g))
+    );
   };
 
   const handleDeletePress = (goalId) => {
@@ -207,12 +145,17 @@ function ProfileScreen() {
   const clearGoals = async () => {
     try {
       await AsyncStorage.removeItem('goals');
-      console.log('Goals cleared from AsyncStorage');
+      setGoals([]);
     } catch (error) {
       console.error('Failed to clear goals:', error);
     }
   };
-  
+
+  if (!profileData) {
+    return <Text>Loading...</Text>;
+  }
+
+  const { name, class: className, team, position, heightFeet, heightInches } = profileData;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -229,12 +172,11 @@ function ProfileScreen() {
         <KeyboardAwareFlatList
           data={goals}
           renderItem={({ item }) => (
-            console.log('Rendering goal item:', item),
             <View style={styles.goalCardContainer}>
               <GoalCard
-                goalId={item.id} // Pass the correct goal ID, which is UUID
-                goal={item.goal} // Pass the goal type
-                goalTitle={item.goalTitle || item.title} // Ensure title is passed correctly
+                goalId={item.id}
+                goal={item.goal}
+                goalTitle={item.goalTitle || item.title}
                 targetDate={item.targetDate}
                 isEditing={item.isEditing}
                 isExpanded={item.isExpanded}
@@ -247,7 +189,7 @@ function ProfileScreen() {
               />
             </View>
           )}
-          keyExtractor={(item) => item.id.toString()} // Use UUID as key
+          keyExtractor={(item) => item.id.toString()}
           extraScrollHeight={Platform.OS === "ios" ? 20 : 0}
           enableOnAndroid={true}
           ListFooterComponent={
