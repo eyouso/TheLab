@@ -131,11 +131,11 @@ function ProfileScreen() {
   const handleDeleteGoal = async (goalId) => {
     try {
       const updatedGoals = await deleteGoal(goalId);
-      setGoals(updatedGoals);
+      setGoals(updatedGoals); // Update the UI immediately
     } catch (error) {
-      console.error("Failed to delete goal from server:", error);
+      console.error("Failed to delete goal locally:", error);
     }
-  };
+  };  
 
   const expandGoal = (id) => {
     setGoals((prevGoals) =>
