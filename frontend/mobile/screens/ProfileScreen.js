@@ -16,18 +16,19 @@ import IDCard from "../components/IDCard";
 import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
 import {
-  fetchGoalsByUserId,
-  addGoalToServer,
-  updateGoalOnServer,
-  deleteGoalFromServer,
   loadGoalsFromLocal,
-  saveGoalsToLocal
+  fetchGoalsByUserId,
+  addGoal,
+  updateGoal,
+  deleteGoal,
+  retryPendingSyncs,
 } from "../data/GoalsDataService";
 import {
   fetchProfileData,
   loadProfileDataFromLocal,
-  saveProfileDataToLocal
+  saveProfileDataToLocal,
 } from "../data/ProfileDataService";
+import NetInfo from "@react-native-community/netinfo";
 
 function ProfileScreen() {
   const route = useRoute();
@@ -37,102 +38,102 @@ function ProfileScreen() {
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [profileData, setProfileData] = useState(null);
 
-  // Load profile data from local storage first, then from the backend
+  // Load profile data from local storage immediately
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        // Load profile data from local storage
         const storedProfileData = await loadProfileDataFromLocal();
         if (storedProfileData) {
           setProfileData(storedProfileData);
         } else {
-          // Fetch profile data from the server if not available locally
-          const fetchedProfileData = await fetchProfileData(1); // Assuming profile ID is 1
+          const fetchedProfileData = await fetchProfileData(1);
           setProfileData(fetchedProfileData);
+          await saveProfileDataToLocal(fetchedProfileData);
         }
       } catch (error) {
-        console.error('Failed to load profile data:', error);
+        console.error("Failed to load profile data:", error);
+        const storedProfileData = await loadProfileDataFromLocal();
+        if (storedProfileData) {
+          setProfileData(storedProfileData);
+        }
       }
     };
 
     loadProfile();
   }, []);
 
-  // Load goals from local storage first, then from the backend
+  // Load local goals first, then try to fetch from server
   useEffect(() => {
     const loadLocalGoals = async () => {
       try {
         const storedGoals = await loadGoalsFromLocal();
-        setGoals(storedGoals);
+        setGoals(storedGoals); // Display local goals immediately
       } catch (error) {
-        console.error('Failed to load local goals:', error);
+        console.error("Failed to load local goals:", error);
       }
     };
 
     const fetchAndMergeServerGoals = async () => {
       try {
         const fetchedGoals = await fetchGoalsByUserId();
-        setGoals(fetchedGoals);
+        if (fetchedGoals.length > 0) {
+          setGoals(fetchedGoals); // Overwrite with server goals only if successful
+        }
       } catch (error) {
-        console.error('Failed to fetch and merge server goals:', error);
+        console.error("Error fetching goals from server, using local goals:", error);
       }
     };
 
-    loadLocalGoals();
-    fetchAndMergeServerGoals();
+    loadLocalGoals(); // Load and display local goals first
+    fetchAndMergeServerGoals(); // Attempt to fetch from the server in parallel
+  }, []);
+
+  // Retry syncing pending changes when network is back online
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        retryPendingSyncs(); // Attempt to sync when connected
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleAddGoal = async (newGoal) => {
     try {
-      const goalToSend = {
+      const addedGoal = await addGoal({
         ...newGoal,
-        userId: 2, // Ensure that userId is properly set
-        creator: "You", // Assuming this is a fixed value, you can adjust as needed
-        targetDate: newGoal.targetDate || null, // Ensure targetDate is nullable if not provided
-      };
-  
-      const addedGoal = await addGoalToServer(goalToSend); // Sync with server
-      setGoals((prevGoals) => [...prevGoals, addedGoal]); // Update the local state with the new goal
+        userId: 2,
+        creator: "You",
+        targetDate: newGoal.targetDate || null,
+      });
+      setGoals((prevGoals) => [...prevGoals, addedGoal]);
     } catch (error) {
-      console.error("Failed to sync new goal to the server:", error);
+      console.error("Failed to add goal locally:", error);
     }
   };
-  
 
   const handleSaveGoal = async (goal) => {
     try {
-      const updatedGoal = {
+      const updatedGoal = await updateGoal({
         ...goal,
-        userId: goal.userId || 2, // Hardcoded userId for now
-        title: goal.goalTitle, // Ensure `goalTitle` is mapped to `title` for the server
-      };
-      
-      // Remove goalTitle as it's not needed by the server, since we have mapped it to `title`
-      delete updatedGoal.goalTitle;
-  
-      console.log("Goal being sent for update:", updatedGoal); // Add this line for debugging
-  
-      const syncedGoal = await updateGoalOnServer(updatedGoal); // Sync via GoalsDataService
-      if (syncedGoal) {
-        setGoals((prevGoals) =>
-          prevGoals.map((g) => (g.id === syncedGoal.id ? syncedGoal : g))
-        );
-      }
+        userId: goal.userId || 2,
+        title: goal.goalTitle,
+      });
+      setGoals((prevGoals) =>
+        prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g))
+      );
     } catch (error) {
       console.error("Failed to sync updated goal to the server:", error);
     }
   };
-  
-  
 
   const handleDeleteGoal = async (goalId) => {
     try {
-      const updatedLocalGoals = goals.filter(goal => goal.id !== goalId);
-      setGoals(updatedLocalGoals);
-      await saveGoalsToLocal(updatedLocalGoals);
-      await deleteGoalFromServer(goalId);
+      const updatedGoals = await deleteGoal(goalId);
+      setGoals(updatedGoals);
     } catch (error) {
-      console.error('Failed to delete goal from server:', error);
+      console.error("Failed to delete goal from server:", error);
     }
   };
 
@@ -161,10 +162,10 @@ function ProfileScreen() {
 
   const clearGoals = async () => {
     try {
-      await AsyncStorage.removeItem('goals');
+      await AsyncStorage.removeItem("goals");
       setGoals([]);
     } catch (error) {
-      console.error('Failed to clear goals:', error);
+      console.error("Failed to clear goals:", error);
     }
   };
 
@@ -204,6 +205,7 @@ function ProfileScreen() {
                 createdAt={item.createdAt}
                 creator={item.creator}
               />
+              {item.isPendingSync && <Text style={styles.pendingSyncText}>Pending Sync</Text>}
             </View>
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -267,16 +269,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    position: 'absolute',
-    bottom: '50%',
-    left: '10%',
-    right: '10%',
+    position: "absolute",
+    bottom: "50%",
+    left: "10%",
+    right: "10%",
   },
   modalText: {
     marginBottom: 15,
     textAlign: "center",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  pendingSyncText: {
+    color: "red",
+    fontStyle: "italic",
+    fontSize: 12,
+    textAlign: "right",
+    marginTop: 5,
   },
 });
 
