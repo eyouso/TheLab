@@ -80,7 +80,7 @@ function ProfileScreen() {
           setGoals(fetchedGoals); // Overwrite with server goals only if successful
         }
       } catch (error) {
-        console.error("Error fetching goals from server, using local goals:", error);
+        console.log("Error fetching goals from server, using local goals:", error);
       }
     };
 
@@ -286,6 +286,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "right",
     marginTop: 5,
+    marginRight: 15,
   },
 });
 
