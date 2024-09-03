@@ -17,11 +17,12 @@ import GoalCard from "../components/GoalCard";
 import AddGoalModal from "../components/AddGoalModal";
 import {
   loadGoalsFromLocal,
-  fetchGoalsByUserId,
-  addGoal,
+  syncGoalsToLocalStorage,
+  addGoalToLocal,
   updateGoal,
   deleteGoal,
-  retryPendingSyncs,
+  syncGoalsToServer,
+  syncGoalToServer
 } from "../data/GoalsDataService";
 import {
   fetchProfileData,
@@ -62,37 +63,40 @@ function ProfileScreen() {
     loadProfile();
   }, []);
 
-  // Load local goals first, then try to fetch from server
+  // Load and display local goals immediately, then sync with server
   useEffect(() => {
-    const loadLocalGoals = async () => {
+    const loadAndSyncGoals = async () => {
       try {
+        // Step 1: Load local goals immediately
         const storedGoals = await loadGoalsFromLocal();
-        setGoals(storedGoals); // Display local goals immediately
+        setGoals(storedGoals);
+
+        // Step 2: Sync goals with the server
+        const mergedGoals = await syncGoalsToLocalStorage();
+        setGoals(mergedGoals); // Update the UI with the merged goals
       } catch (error) {
-        console.error("Failed to load local goals:", error);
+        console.error("Failed to sync goals:", error);
       }
     };
 
-    const fetchAndMergeServerGoals = async () => {
-      try {
-        const fetchedGoals = await fetchGoalsByUserId();
-        if (fetchedGoals.length > 0) {
-          setGoals(fetchedGoals); // Overwrite with server goals only if successful
-        }
-      } catch (error) {
-        console.log("Error fetching goals from server, using local goals:", error);
-      }
-    };
-
-    loadLocalGoals(); // Load and display local goals first
-    fetchAndMergeServerGoals(); // Attempt to fetch from the server in parallel
+    loadAndSyncGoals(); // Load and sync goals on component mount
+    try {
+      syncGoalsToServer(); // Attempt to sync with the server
+    } catch (error) {
+      console.error("Failed to sync goals to the server:", error);
+    }
   }, []);
 
   // Retry syncing pending changes when network is back online
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       if (state.isConnected) {
-        retryPendingSyncs(); // Attempt to sync when connected
+        try {
+          syncGoalsToLocalStorage(); // Attempt to sync when connected
+          syncGoalsToServer(); // Attempt to sync with the server
+        } catch (error) {
+          console.error("Failed to sync goals:", error);
+        }
       }
     });
 
@@ -101,17 +105,25 @@ function ProfileScreen() {
 
   const handleAddGoal = async (newGoal) => {
     try {
-      const addedGoal = await addGoal({
+      // Step 1: Add the goal locally and render it immediately
+      const addedGoal = await addGoalToLocal({
         ...newGoal,
         userId: 2,
         creator: "You",
         targetDate: newGoal.targetDate || null,
       });
       setGoals((prevGoals) => [...prevGoals, addedGoal]);
+  
+      // Step 2: Attempt to sync the goal with the server in the background
+      await syncGoalToServer(addedGoal, (updatedGoals) => {
+        setGoals(updatedGoals); // Update the UI to reflect the sync state immediately
+      });
     } catch (error) {
-      console.error("Failed to add goal locally:", error);
+      console.error("Failed to add goal:", error);
     }
   };
+  
+  
 
   const handleSaveGoal = async (goal) => {
     try {
@@ -135,7 +147,7 @@ function ProfileScreen() {
     } catch (error) {
       console.error("Failed to delete goal locally:", error);
     }
-  };  
+  };
 
   const expandGoal = (id) => {
     setGoals((prevGoals) =>
@@ -173,7 +185,14 @@ function ProfileScreen() {
     return <Text>Loading...</Text>;
   }
 
-  const { name, class: className, team, position, heightFeet, heightInches } = profileData;
+  const {
+    name,
+    class: className,
+    team,
+    position,
+    heightFeet,
+    heightInches,
+  } = profileData;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -205,7 +224,9 @@ function ProfileScreen() {
                 createdAt={item.createdAt}
                 creator={item.creator}
               />
-              {item.isPendingSync && <Text style={styles.pendingSyncText}>Pending Sync</Text>}
+              {item.isPendingSync && (
+                <Text style={styles.pendingSyncText}>Pending Sync</Text>
+              )}
             </View>
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -213,7 +234,10 @@ function ProfileScreen() {
           enableOnAndroid={true}
           ListFooterComponent={
             <View style={styles.addGoalView}>
-              <Button title="Add Goal" onPress={() => setIsModalVisible(true)} />
+              <Button
+                title="Add Goal"
+                onPress={() => setIsModalVisible(true)}
+              />
               <Button title="Clear Goals" onPress={clearGoals} />
             </View>
           }
@@ -231,9 +255,14 @@ function ProfileScreen() {
           onRequestClose={() => setDeleteModalVisible(false)}
         >
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Are you sure you want to delete this goal?</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to delete this goal?
+            </Text>
             <Button title="Delete" onPress={confirmDelete} />
-            <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
+            <Button
+              title="Cancel"
+              onPress={() => setDeleteModalVisible(false)}
+            />
           </View>
         </Modal>
       </View>
