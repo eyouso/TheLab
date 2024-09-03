@@ -20,7 +20,8 @@ import {
   syncGoalsToLocalStorage,
   addGoalToLocal,
   updateGoal,
-  deleteGoal,
+  deleteGoalFromLocal,
+  syncDeleteGoalToServer,
   syncGoalsToServer,
   syncGoalToServer
 } from "../data/GoalsDataService";
@@ -142,12 +143,17 @@ function ProfileScreen() {
 
   const handleDeleteGoal = async (goalId) => {
     try {
-      const updatedGoals = await deleteGoal(goalId);
-      setGoals(updatedGoals); // Update the UI immediately
+      // Step 1: Remove the goal locally and update the UI immediately
+      const updatedGoals = await deleteGoalFromLocal(goalId);
+      setGoals(updatedGoals);
+  
+      // Step 2: Attempt to sync the deletion with the server in the background
+      await syncDeleteGoalToServer(goalId, setGoals);
     } catch (error) {
-      console.error("Failed to delete goal locally:", error);
+      console.error("Failed to delete goal:", error);
     }
   };
+  
 
   const expandGoal = (id) => {
     setGoals((prevGoals) =>

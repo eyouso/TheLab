@@ -232,22 +232,41 @@ export const updateGoal = async (goal) => {
   }
 };
 
-export const deleteGoal = async (goalId) => {
-  // Load the local goals and immediately update the state/UI
-  const localGoals = await loadGoalsFromLocal();
-  const updatedGoals = localGoals.filter(g => g.id !== goalId);
-  await saveGoalsToLocal(updatedGoals);
-
-  // Return the updated goals immediately to update the UI
-  return updatedGoals;
-
-  // Perform the network request in the background
-  try {
-    await deleteGoalFromServer(goalId);
-  } catch (error) {
-    console.log('Failed to delete goal from server:', error);
-  }
-};
+export const deleteGoalFromLocal = async (goalId) => {
+    const localGoals = await loadGoalsFromLocal();
+    const updatedGoals = localGoals.filter(g => g.id !== goalId);
+    await saveGoalsToLocal(updatedGoals);
+  
+    return updatedGoals;
+  };
+  
+  export const syncDeleteGoalToServer = async (goalId, updateGoalsInUI) => {
+    try {
+      await deleteGoalFromServer(goalId);
+      
+      // After successful server deletion, remove the goal from local storage
+      const localGoals = await loadGoalsFromLocal();
+      const updatedGoals = localGoals.filter(g => g.id !== goalId);
+      await saveGoalsToLocal(updatedGoals);
+  
+      // Update the UI immediately after deletion
+      if (updateGoalsInUI) {
+        updateGoalsInUI(updatedGoals);
+      }
+  
+    } catch (error) {
+      console.log('Failed to delete goal from server:', error);
+      // If the delete failed, mark the goal for deletion on the next sync attempt
+      const localGoals = await loadGoalsFromLocal();
+      const updatedGoals = localGoals.map(g => g.id === goalId ? { ...g, isPendingDelete: true } : g);
+      await saveGoalsToLocal(updatedGoals);
+  
+      if (updateGoalsInUI) {
+        updateGoalsInUI(updatedGoals);
+      }
+    }
+  };
+  
 
 export const retryPendingSyncs = async (retryCount = 0) => {
   const MAX_RETRIES = 5;
