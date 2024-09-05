@@ -68,25 +68,21 @@ function ProfileScreen() {
   useEffect(() => {
     const loadAndSyncGoals = async () => {
       try {
-        // Step 1: Load local goals immediately
+        // Load local goals
         const storedGoals = await loadGoalsFromLocal();
         setGoals(storedGoals);
-
-        // Step 2: Sync goals with the server
+  
+        // Sync goals with the server (this already includes syncing with the server)
         const mergedGoals = await syncGoalsToLocalStorage();
-        setGoals(mergedGoals); // Update the UI with the merged goals
+        setGoals(mergedGoals);
       } catch (error) {
         console.error("Failed to sync goals:", error);
       }
     };
-
-    loadAndSyncGoals(); // Load and sync goals on component mount
-    try {
-      syncGoalsToServer(); // Attempt to sync with the server
-    } catch (error) {
-      console.error("Failed to sync goals to the server:", error);
-    }
-  }, []);
+  
+    // Run this only once when the component mounts
+    loadAndSyncGoals();
+  }, []); // Ensure no other dependencies trigger re-renders  
 
   // Retry syncing pending changes when network is back online
   useEffect(() => {
