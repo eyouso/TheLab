@@ -8,6 +8,12 @@ const Goal = (sequelize, DataTypes) => {
     }
   }
   Goal.init({
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4, // This is Sequelize's default UUID generation, remove it if generating on the client side
+      primaryKey: true,
+      allowNull: false,
+    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,7 +38,7 @@ const Goal = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Goal',
     timestamps: true,
-  });
+  });  
   return Goal;
 };
 

@@ -19,10 +19,10 @@ export const getGoalsByUserId = async (req, res) => {
 
 // Add a new goal for a user
 export const addGoal = async (req, res) => {
-  const { title, goal, targetDate, createdby, userId } = req.body; // Get userId from request body
+  const { id, title, goal, targetDate, createdby, userId } = req.body; // Get UUID from request body
   try {
     const newGoal = await Goal.create({
-      id: uuidv4(),  // Generate a proper UUID for the new goal
+      id,  // Use the UUID sent from the client
       title,
       goal,
       targetDate: targetDate || null,  // Allow null for targetDate

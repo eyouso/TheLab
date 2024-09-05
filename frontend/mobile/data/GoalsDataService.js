@@ -104,6 +104,7 @@ export const addGoalToServer = async (goal) => {
   const url = `${API_URL}/users/${goal.userId}/goals`;
 
   const goalData = {
+    id: goal.id, // Pass the UUID from the frontend
     title: goal.goalTitle, 
     createdby: goal.creator, 
     targetDate: goal.targetDate || null, 
@@ -118,7 +119,7 @@ export const addGoalToServer = async (goal) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(goalData), 
+      body: JSON.stringify(goalData), // Send the goal with the frontend-generated UUID
     });
     if (!response.ok) {
       throw new Error(`Failed to add goal: ${response.statusText}`);
@@ -129,6 +130,7 @@ export const addGoalToServer = async (goal) => {
     throw error;
   }
 };
+
 
 export const updateGoalOnServer = async (goal) => {
   const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;
@@ -182,14 +184,15 @@ export const deleteGoalFromServer = async (goalId) => {
 };
 
 export const addGoalToLocal = async (goal) => {
-    const localGoals = await loadGoalsFromLocal();
-    const newGoal = { ...goal, id: `local-${Date.now()}`, isPendingSync: true };
-    localGoals.push(newGoal);
-    await saveGoalsToLocal(localGoals);
-  
-    // Return the new goal immediately to update the UI
-    return newGoal;
-  };
+  const localGoals = await loadGoalsFromLocal();
+  const newGoal = { ...goal, isPendingSync: true }; // No need for local- prefix as UUID is already generated
+  localGoals.push(newGoal);
+  await saveGoalsToLocal(localGoals);
+
+  // Return the new goal immediately to update the UI
+  return newGoal;
+};
+
   
   export const syncGoalToServer = async (goal, updateGoalsInUI) => {
     try {

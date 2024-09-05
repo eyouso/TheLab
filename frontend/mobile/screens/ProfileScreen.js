@@ -109,8 +109,8 @@ function ProfileScreen() {
       // Step 1: Add the goal locally and render it immediately
       const addedGoal = await addGoalToLocal({
         ...newGoal,
-        userId: 2,
-        creator: "You",
+        userId: 2,  // Assuming userId 2 is for demonstration; adjust accordingly
+        creator: 'You',
         targetDate: newGoal.targetDate || null,
       });
       setGoals((prevGoals) => [...prevGoals, addedGoal]);
@@ -122,9 +122,7 @@ function ProfileScreen() {
     } catch (error) {
       console.error("Failed to add goal:", error);
     }
-  };
-  
-  
+  };  
 
   const handleSaveGoal = async (goal) => {
     try {

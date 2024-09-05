@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import 'react-native-get-random-values'; // Import this at the top
+import { v4 as uuidv4 } from 'uuid'; // Import uuid
 import {
   Modal,
   View,
   Text,
   TextInput,
-  Button,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 
 function AddGoalModal({ visible, onClose, onAdd }) {
@@ -16,14 +17,14 @@ function AddGoalModal({ visible, onClose, onAdd }) {
     console.log('Add button pressed');
     if (goalTitle.trim()) {
       const newGoal = {
-        id: String(Date.now()), // unique id based on timestamp
+        id: uuidv4(), // Generate a UUID here
         goal: 'individualGoal',
         goalTitle,
         createdAt: new Date().toISOString(),
         creator: 'You',
       };
       console.log('New goal:', newGoal);
-      onAdd(newGoal);
+      onAdd(newGoal); // Pass the new goal with UUID to the handler
       setGoalTitle('');
       onClose();
     }
