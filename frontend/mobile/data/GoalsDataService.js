@@ -72,33 +72,40 @@ export const syncGoalsToLocalStorage = async () => {
 };
 
 export const syncGoalsToServer = async () => {
-  const localGoals = await loadGoalsFromLocal();
-  const pendingSyncGoals = localGoals.filter(goal => goal.isPendingSync);
+  console.log("Syncing goals to server...");
+  const localGoals = await loadGoalsFromLocal(); // Load local goals
+  const pendingSyncGoals = localGoals.filter(goal => goal.isPendingSync); // Filter goals pending sync
 
   for (const goal of pendingSyncGoals) {
     try {
-      let addedGoal;
+      let syncedGoal;
 
-      if (goal.id.startsWith("local-")) {
-        addedGoal = await addGoalToServer(goal);
-        goal.id = addedGoal.id;  // Replace local ID with the server-generated UUID
-        goal.isPendingSync = false;
+      // If the goal is new, add it to the server
+      if (!goal.id || goal.isPendingSync) {
+        syncedGoal = await addGoalToServer(goal);  // Add new goal to the server
       } else if (goal.isPendingUpdate) {
-        addedGoal = await updateGoalOnServer(goal);
-        goal.isPendingSync = false;
+        // If the goal exists but has been updated, update it on the server
+        syncedGoal = await updateGoalOnServer(goal); // Update existing goal on the server
       }
 
-      // Save the updated goal with the correct ID
-      const updatedGoals = localGoals.map(g => g.id === goal.id ? goal : g);
-      await saveGoalsToLocal(updatedGoals);
+      // After successfully syncing, remove the `isPendingSync` flag
+      goal.isPendingSync = false;
+
+      // Update local goals list with the synced goal (whether added or updated)
+      const updatedGoals = localGoals.map(g => g.id === goal.id ? { ...goal, ...syncedGoal } : g);
+      await saveGoalsToLocal(updatedGoals); // Save the updated goals back to local storage
 
     } catch (error) {
       console.log("Failed to sync goal to server:", error);
+      // Optionally, you could handle retries or log errors for failed syncs
     }
   }
 
+  // Ensure that the updated localGoals (even if no new changes) are saved
   await saveGoalsToLocal(localGoals);
+  return localGoals;
 };
+
 
 export const addGoalToServer = async (goal) => {
   const url = `${API_URL}/users/${goal.userId}/goals`;

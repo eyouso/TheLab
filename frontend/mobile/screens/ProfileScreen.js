@@ -87,20 +87,20 @@ function ProfileScreen() {
   }, []); // Ensure no other dependencies trigger re-renders  
 
   // Retry syncing pending changes when network is back online
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      if (state.isConnected) {
-        try {
-          syncGoalsToLocalStorage(); // Attempt to sync when connected
-          syncGoalsToServer(); // Attempt to sync with the server
-        } catch (error) {
-          console.error("Failed to sync goals:", error);
-        }
-      }
-    });
+  // useEffect(() => {
+  //   const unsubscribe = NetInfo.addEventListener((state) => {
+  //     if (state.isConnected) {
+  //       try {
+  //         syncGoalsToLocalStorage(); // Attempt to sync when connected
+  //         syncGoalsToServer(); // Attempt to sync with the server
+  //       } catch (error) {
+  //         console.error("Failed to sync goals:", error);
+  //       }
+  //     }
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   const handleAddGoal = async (newGoal) => {
     try {
@@ -174,14 +174,26 @@ function ProfileScreen() {
     setGoalToDelete(null);
   };
 
-  const clearGoals = async () => {
+  const refreshGoals = async () => {
+    console.log("Refreshing goals...");
     try {
-      await AsyncStorage.removeItem("goals");
-      setGoals([]);
+      const refreshedGoals = await syncGoalsToLocalStorage(); // Syncs with server
+      if (refreshedGoals) {
+        setGoals(refreshedGoals); // Update UI with refreshed goals
+      }
     } catch (error) {
-      console.error("Failed to clear goals:", error);
+      console.log("Failed to refresh goals:", error);
+    }
+    try {
+      const updatedGoals = await syncGoalsToServer(); // Syncs with server
+      if (updatedGoals) {
+        setGoals(updatedGoals); // Update UI with refreshed goals
+      }
+    } catch (error) {
+      console.log("Failed to sync goals to server:", error);
     }
   };
+  
 
   if (!profileData) {
     return <Text>Loading...</Text>;
@@ -240,7 +252,7 @@ function ProfileScreen() {
                 title="Add Goal"
                 onPress={() => setIsModalVisible(true)}
               />
-              <Button title="Clear Goals" onPress={clearGoals} />
+              <Button title="Refresh Goals" onPress={refreshGoals} />
             </View>
           }
           contentContainerStyle={styles.flatListContent}
