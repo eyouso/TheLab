@@ -74,7 +74,9 @@ function ProfileScreen() {
   
         // Sync goals with the server (this already includes syncing with the server)
         const mergedGoals = await syncGoalsToLocalStorage();
-        setGoals(mergedGoals);
+        if(mergedGoals){
+          setGoals(mergedGoals);
+        }
       } catch (error) {
         console.error("Failed to sync goals:", error);
       }

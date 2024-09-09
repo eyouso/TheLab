@@ -44,7 +44,7 @@ export const syncGoalsToLocalStorage = async () => {
       serverGoals = await fetchGoalsByUserId();
     } catch (error) {
       console.log("Error fetching goals from server:", error);
-      return localGoals; // Return local goals if server fetch fails
+      return; // Return if server fetch fails
     }
 
     // Merge local goals with server goals
