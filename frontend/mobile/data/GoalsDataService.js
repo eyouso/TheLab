@@ -41,20 +41,28 @@ export const syncGoalsToLocalStorage = async () => {
     let serverGoals = [];
 
     try {
-      serverGoals = await fetchGoalsByUserId();
+      serverGoals = await fetchGoalsByUserId(); // Fetch from the server
     } catch (error) {
       console.log("Error fetching goals from server:", error);
       return; // Return if server fetch fails
     }
 
-    // Merge local goals with server goals
+    // Merge local goals with server goals, but exclude any goal marked for deletion
     const localGoalsMap = new Map(localGoals.map(goal => [goal.id, goal]));
     const mergedGoals = serverGoals.map(serverGoal => {
       if (localGoalsMap.has(serverGoal.id)) {
-        return { ...localGoalsMap.get(serverGoal.id), ...serverGoal, isPendingSync: false };
+        const localGoal = localGoalsMap.get(serverGoal.id);
+
+        // If the local goal is marked for deletion, ignore the server version
+        if (localGoal.isPendingDelete) {
+          return null;
+        }
+
+        // Otherwise, merge the server goal with the local goal
+        return { ...localGoal, ...serverGoal, isPendingSync: false };
       }
       return serverGoal;
-    });
+    }).filter(goal => goal !== null); // Filter out null (goals that are pending deletion)
 
     // Add any local goals not in the server goals
     localGoals.forEach(localGoal => {
@@ -63,7 +71,7 @@ export const syncGoalsToLocalStorage = async () => {
       }
     });
 
-    await saveGoalsToLocal(mergedGoals);
+    await saveGoalsToLocal(mergedGoals); // Save the merged goals
     return mergedGoals;
   } catch (error) {
     console.log("Failed to sync goals to local storage:", error);
@@ -73,8 +81,29 @@ export const syncGoalsToLocalStorage = async () => {
 
 export const syncGoalsToServer = async () => {
   console.log("Syncing goals to server...");
-  const localGoals = await loadGoalsFromLocal(); // Load local goals
-  const pendingSyncGoals = localGoals.filter(goal => goal.isPendingSync); // Filter goals pending sync
+
+  // Step 1: Load local goals
+  const localGoals = await loadGoalsFromLocal();
+
+  // Step 2: Sync deletions for goals marked with isPendingDelete
+  const pendingDeleteGoals = localGoals.filter(goal => goal.isPendingDelete && !goal.isPendingSync); // Only sync deletions for goals that were synced to the server
+  for (const goal of pendingDeleteGoals) {
+    try {
+      // Attempt to delete from server
+      await deleteGoalFromServer(goal.id);
+
+      // After successful server deletion, remove the goal from local storage
+      const updatedGoals = localGoals.filter(g => g.id !== goal.id);
+      await saveGoalsToLocal(updatedGoals);
+
+    } catch (error) {
+      console.log(`Failed to delete goal ${goal.id} from server:`, error);
+      // Keep the goal in local storage with isPendingDelete, so it's retried later
+    }
+  }
+
+  // Step 3: Sync remaining goals that are pending sync or update
+  const pendingSyncGoals = localGoals.filter(goal => goal.isPendingSync && !goal.isPendingDelete); // Exclude goals marked for deletion
 
   for (const goal of pendingSyncGoals) {
     try {
@@ -97,14 +126,15 @@ export const syncGoalsToServer = async () => {
 
     } catch (error) {
       console.log("Failed to sync goal to server:", error);
-      // Optionally, you could handle retries or log errors for failed syncs
     }
   }
 
-  // Ensure that the updated localGoals (even if no new changes) are saved
+  // Save the final updated list of goals after sync operations
   await saveGoalsToLocal(localGoals);
-  return localGoals;
+
+  return localGoals; // Return updated local goals after syncing
 };
+
 
 
 export const addGoalToServer = async (goal) => {
@@ -243,12 +273,29 @@ export const updateGoal = async (goal) => {
 };
 
 export const deleteGoalFromLocal = async (goalId) => {
-    const localGoals = await loadGoalsFromLocal();
-    const updatedGoals = localGoals.filter(g => g.id !== goalId);
-    await saveGoalsToLocal(updatedGoals);
+  const localGoals = await loadGoalsFromLocal();
+
+  // Find the goal to check if it has the isPendingSync flag
+  const goal = localGoals.find(g => g.id === goalId);
   
-    return updatedGoals;
-  };
+  // If the goal has isPendingSync, remove it immediately (because it was never synced to the server)
+  if (goal && goal.isPendingSync) {
+    const updatedGoals = localGoals.filter(g => g.id !== goalId); // Remove from local storage
+    await saveGoalsToLocal(updatedGoals);
+    console.log(`Goal ${goalId} removed from local storage because it was pending sync and deleted offline.`);
+    return updatedGoals; // Return updated list
+  }
+
+  // Otherwise, mark the goal for deletion by setting isPendingDelete
+  const updatedGoals = localGoals.map(goal =>
+    goal.id === goalId ? { ...goal, isPendingDelete: true } : goal
+  );
+  
+  await saveGoalsToLocal(updatedGoals); // Save updated goals with deletion mark
+  return updatedGoals;
+};
+
+
   
   export const syncDeleteGoalToServer = async (goalId, updateGoalsInUI) => {
     try {
@@ -276,6 +323,51 @@ export const deleteGoalFromLocal = async (goalId) => {
       }
     }
   };
+
+  // Mark a goal for deletion from the server
+  export const markGoalForDeletion = async (goalId) => {
+    const localGoals = await loadGoalsFromLocal();
+  
+    // Mark the goal for deletion locally
+    const updatedGoals = localGoals.map(goal => 
+      goal.id === goalId ? { ...goal, isPendingDelete: true } : goal
+    );
+  
+    await saveGoalsToLocal(updatedGoals); // Save the updated list with pending deletion flag
+  };
+
+  export const syncPendingDeletions = async () => {
+    const localGoals = await loadGoalsFromLocal();
+    const pendingDeleteGoals = localGoals.filter(goal => goal.isPendingDelete); // Filter goals marked for deletion
+  
+    for (const goal of pendingDeleteGoals) {
+      try {
+        // Attempt to delete from server
+        await deleteGoalFromServer(goal.id);
+  
+        // After successful deletion from server, remove from local storage
+        const updatedGoals = localGoals.filter(g => g.id !== goal.id);
+        await saveGoalsToLocal(updatedGoals);
+  
+      } catch (error) {
+        console.log(`Failed to delete goal ${goal.id} from server:`, error);
+        // Optionally, implement retry logic or error handling here
+      }
+    }
+  };
+
+  export const clearAllGoalsFromLocal = async () => {
+    try {
+      await AsyncStorage.removeItem('goals'); // Remove all stored goals
+      console.log("All goals cleared from local storage.");
+    } catch (error) {
+      console.log("Failed to clear goals from local storage:", error);
+      throw error;
+    }
+  };
+  
+  
+  
   
 
 export const retryPendingSyncs = async (retryCount = 0) => {

@@ -22,8 +22,11 @@ import {
   updateGoal,
   deleteGoalFromLocal,
   syncDeleteGoalToServer,
+  markGoalForDeletion,
+  syncPendingDeletions,
   syncGoalsToServer,
-  syncGoalToServer
+  syncGoalToServer,
+  clearAllGoalsFromLocal,
 } from "../data/GoalsDataService";
 import {
   fetchProfileData,
@@ -139,16 +142,24 @@ function ProfileScreen() {
 
   const handleDeleteGoal = async (goalId) => {
     try {
-      // Step 1: Remove the goal locally and update the UI immediately
-      const updatedGoals = await deleteGoalFromLocal(goalId);
-      setGoals(updatedGoals);
+      // Step 1: Immediately remove the goal from the UI by updating the local state
+      const updatedGoals = goals.filter(goal => goal.id !== goalId);
+      setGoals(updatedGoals); // Update the UI immediately
   
-      // Step 2: Attempt to sync the deletion with the server in the background
-      await syncDeleteGoalToServer(goalId, setGoals);
+      // Step 2: Mark the goal for deletion in local storage (add isPendingDelete flag)
+      await markGoalForDeletion(goalId);
+  
+      // Optionally, try to sync deletion if online
+      const netInfo = await NetInfo.fetch();
+      if (netInfo.isConnected) {
+        await syncPendingDeletions(); // Attempt to sync deletions if online
+      }
+
     } catch (error) {
-      console.error("Failed to delete goal:", error);
+      console.log("Failed to delete goal:", error);
     }
   };
+  
   
 
   const expandGoal = (id) => {
@@ -185,16 +196,24 @@ function ProfileScreen() {
       console.log("Failed to refresh goals:", error);
     }
     try {
-      const updatedGoals = await syncGoalsToServer(); // Syncs with server
+      const updatedGoals = await syncGoalsToServer(); // Syncs with server, including deletions
       if (updatedGoals) {
-        setGoals(updatedGoals); // Update UI with refreshed goals
+        setGoals(updatedGoals); // Update UI with synced goals
       }
     } catch (error) {
       console.log("Failed to sync goals to server:", error);
     }
   };
-  
 
+  const clearLocalGoals = async () => {
+    try {
+      await clearAllGoalsFromLocal(); // Clear all goals from local storage
+      setGoals([]); // Update the UI by clearing the state
+    } catch (error) {
+      console.log("Failed to clear local goals:", error);
+    }
+  };
+  
   if (!profileData) {
     return <Text>Loading...</Text>;
   }
@@ -221,7 +240,7 @@ function ProfileScreen() {
           inches={heightInches}
         />
         <KeyboardAwareFlatList
-          data={goals}
+          data={goals.filter(goal => !goal.isPendingDelete)} // Exclude goals marked for deletion
           renderItem={({ item }) => (
             <View style={styles.goalCardContainer}>
               <GoalCard
@@ -253,6 +272,7 @@ function ProfileScreen() {
                 onPress={() => setIsModalVisible(true)}
               />
               <Button title="Refresh Goals" onPress={refreshGoals} />
+              <Button title="Clear Local Goals" onPress={clearLocalGoals} />
             </View>
           }
           contentContainerStyle={styles.flatListContent}
