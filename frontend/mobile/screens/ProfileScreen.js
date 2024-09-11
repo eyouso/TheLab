@@ -42,6 +42,7 @@ function ProfileScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [profileData, setProfileData] = useState(null);
+  const [abortControllers, setAbortControllers] = useState({});
 
   // Load profile data from local storage immediately
   useEffect(() => {
@@ -110,20 +111,32 @@ function ProfileScreen() {
       // Step 1: Add the goal locally and render it immediately
       const addedGoal = await addGoalToLocal({
         ...newGoal,
-        userId: 2,  // Assuming userId 2 is for demonstration; adjust accordingly
+        userId: 2,  
         creator: 'You',
         targetDate: newGoal.targetDate || null,
       });
       setGoals((prevGoals) => [...prevGoals, addedGoal]);
-  
-      // Step 2: Attempt to sync the goal with the server in the background
+
+      // Step 2: Create an AbortController and store it
+      const abortController = new AbortController();
+      setAbortControllers((prevControllers) => ({
+        ...prevControllers,
+        [addedGoal.id]: abortController,  // Track the controller by goal ID
+      }));
+
+      // Step 3: Attempt to sync the goal with the server in the background
       await syncGoalToServer(addedGoal, (updatedGoals) => {
-        setGoals(updatedGoals); // Update the UI to reflect the sync state immediately
-      });
+        setGoals(updatedGoals); 
+        // Clean up after sync
+        setAbortControllers((prevControllers) => {
+          const { [addedGoal.id]: _, ...rest } = prevControllers; // Remove the controller after syncing
+          return rest;
+        });
+      }, abortController);
     } catch (error) {
       console.error("Failed to add goal:", error);
     }
-  };  
+  };
 
   const handleSaveGoal = async (goal) => {
     try {
@@ -142,17 +155,27 @@ function ProfileScreen() {
 
   const handleDeleteGoal = async (goalId) => {
     try {
-      // Step 1: Immediately remove the goal from the UI by updating the local state
+      // Step 1: Cancel the ongoing POST request if the goal is in the middle of being added
+      const controller = abortControllers[goalId];
+      if (controller) {
+        controller.abort();  // Cancel the request
+        setAbortControllers((prevControllers) => {
+          const { [goalId]: _, ...rest } = prevControllers; // Remove the aborted controller
+          return rest;
+        });
+      }
+
+      // Step 2: Remove the goal from the local state
       const updatedGoals = goals.filter(goal => goal.id !== goalId);
-      setGoals(updatedGoals); // Update the UI immediately
-  
-      // Step 2: Mark the goal for deletion in local storage (add isPendingDelete flag)
+      setGoals(updatedGoals);
+
+      // Step 3: Mark the goal for deletion in local storage
       await markGoalForDeletion(goalId);
-  
+
       // Optionally, try to sync deletion if online
       const netInfo = await NetInfo.fetch();
       if (netInfo.isConnected) {
-        await syncPendingDeletions(); // Attempt to sync deletions if online
+        await syncPendingDeletions(); 
       }
 
     } catch (error) {

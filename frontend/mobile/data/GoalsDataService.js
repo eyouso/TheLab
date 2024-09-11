@@ -137,17 +137,17 @@ export const syncGoalsToServer = async () => {
 
 
 
-export const addGoalToServer = async (goal) => {
+export const addGoalToServer = async (goal, signal) => {
   const url = `${API_URL}/users/${goal.userId}/goals`;
 
   const goalData = {
-    id: goal.id, // Pass the UUID from the frontend
-    title: goal.goalTitle, 
-    createdby: goal.creator, 
-    targetDate: goal.targetDate || null, 
-    goal: goal.goal, 
+    id: goal.id, 
+    title: goal.goalTitle,
+    createdby: goal.creator,
+    targetDate: goal.targetDate || null,
+    goal: goal.goal,
     createdAt: goal.createdAt,
-    userId: goal.userId, 
+    userId: goal.userId,
   };
 
   try {
@@ -156,14 +156,19 @@ export const addGoalToServer = async (goal) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(goalData), // Send the goal with the frontend-generated UUID
+      body: JSON.stringify(goalData),
+      signal,  // Pass the abort signal here
     });
     if (!response.ok) {
       throw new Error(`Failed to add goal: ${response.statusText}`);
     }
     return await response.json();
   } catch (error) {
-    console.log('Failed to add goal:', error);
+    if (error.name === 'AbortError') {
+      console.log('Add goal request was aborted.');
+    } else {
+      console.log('Failed to add goal:', error);
+    }
     throw error;
   }
 };
@@ -231,27 +236,35 @@ export const addGoalToLocal = async (goal) => {
 };
 
   
-  export const syncGoalToServer = async (goal, updateGoalsInUI) => {
-    try {
-      const syncedGoal = await addGoalToServer(goal);
-      const localGoals = await loadGoalsFromLocal();
-  
-      // Update the goal with the server-generated ID and clear the pending sync flag
-      const updatedGoals = localGoals.map(g => g.id === goal.id ? { ...syncedGoal, isPendingSync: false } : g);
-      await saveGoalsToLocal(updatedGoals);
-  
-      // Update the UI immediately after syncing
-      if (updateGoalsInUI) {
-        updateGoalsInUI(updatedGoals);
-      }
-  
-      return syncedGoal; // Return the goal with the correct server ID
-    } catch (error) {
-      console.log("Failed to sync new goal to the server:", error);
-      // Goal remains in local storage with the pending sync flag
-      return goal; // Return the goal with the pending sync tag intact
+export const syncGoalToServer = async (goal, updateGoalsInUI, abortController) => {
+  try {
+    // Pass the abort signal to the fetch call
+    const controller = abortController || new AbortController();
+    const signal = controller.signal;
+
+    const syncedGoal = await addGoalToServer(goal, signal);  // Passing the abort signal
+    const localGoals = await loadGoalsFromLocal();
+
+    // Update the goal with the server-generated ID and clear the pending sync flag
+    const updatedGoals = localGoals.map(g => g.id === goal.id ? { ...syncedGoal, isPendingSync: false } : g);
+    await saveGoalsToLocal(updatedGoals);
+
+    // Update the UI immediately after syncing
+    if (updateGoalsInUI) {
+      updateGoalsInUI(updatedGoals);
     }
-  };
+
+    return syncedGoal; // Return the goal with the correct server ID
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log("Add goal request was aborted.");
+    } else {
+      console.log("Failed to sync new goal to the server:", error);
+    }
+    return goal; // Return the goal with the pending sync tag intact
+  }
+};
+
   
   
   
