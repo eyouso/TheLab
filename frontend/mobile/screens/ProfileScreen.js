@@ -164,26 +164,29 @@ function ProfileScreen() {
           return rest;
         });
       }
-
+  
       // Step 2: Remove the goal from the local state
+      const goalToDelete = goals.find(goal => goal.id === goalId);
       const updatedGoals = goals.filter(goal => goal.id !== goalId);
       setGoals(updatedGoals);
-
-      // Step 3: Mark the goal for deletion in local storage
-      await markGoalForDeletion(goalId);
-
-      // Optionally, try to sync deletion if online
-      const netInfo = await NetInfo.fetch();
-      if (netInfo.isConnected) {
-        await syncPendingDeletions(); 
+  
+      if (goalToDelete.isPendingSync) {
+        // If the goal has never been synced (pending sync), remove it from local storage immediately
+        await deleteGoalFromLocal(goalId);
+      } else {
+        // Step 3: Mark the goal for deletion in local storage if it was already synced
+        await markGoalForDeletion(goalId);
+  
+        // Optionally, try to sync deletion if online
+        const netInfo = await NetInfo.fetch();
+        if (netInfo.isConnected) {
+          await syncPendingDeletions(); 
+        }
       }
-
     } catch (error) {
       console.log("Failed to delete goal:", error);
     }
   };
-  
-  
 
   const expandGoal = (id) => {
     setGoals((prevGoals) =>
@@ -235,6 +238,13 @@ function ProfileScreen() {
     } catch (error) {
       console.log("Failed to clear local goals:", error);
     }
+  };
+
+  const handlePrintGoalTitles = async () => {
+    const allGoals = await loadGoalsFromLocal();  // Load all goals, including ones pending deletion
+    allGoals.forEach(goal => {
+      console.log(`Goal: ${goal.title} - Pending Delete: ${goal.isPendingDelete || false}`);
+    });
   };
   
   if (!profileData) {
@@ -296,6 +306,7 @@ function ProfileScreen() {
               />
               <Button title="Refresh Goals" onPress={refreshGoals} />
               <Button title="Clear Local Goals" onPress={clearLocalGoals} />
+              <Button title="Print Goal Titles" onPress={handlePrintGoalTitles} />
             </View>
           }
           contentContainerStyle={styles.flatListContent}
@@ -336,7 +347,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   addGoalView: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     margin: 10,
