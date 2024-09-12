@@ -71,8 +71,9 @@ function GoalCard({
       goal,
       createdAt,
       creator: creator || "You",  // Default to "You" if no creator
+      userId: 2,  // Include userId (assuming 2 is the correct userId, update as needed)
     };
-
+  
     saveGoal(updatedGoal);  // Call saveGoal with the updated goal object
     setTitle(tempTitle);  // Update the title after saving
     setEditModalVisible(false);  // Close the modal

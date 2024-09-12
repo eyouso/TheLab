@@ -20,6 +20,7 @@ import {
   syncGoalsToLocalStorage,
   addGoalToLocal,
   updateGoal,
+  updateGoalLocally,
   deleteGoalFromLocal,
   syncDeleteGoalToServer,
   markGoalForDeletion,
@@ -138,20 +139,52 @@ function ProfileScreen() {
     }
   };
 
-  const handleSaveGoal = async (goal) => {
+  const handleSaveGoal = async (updatedGoal) => {
     try {
-      const updatedGoal = await updateGoal({
-        ...goal,
-        userId: goal.userId || 2,
-        title: goal.goalTitle,
-      });
+      // Step 1: Abort any ongoing POST request for the current goal
+      const controller = abortControllers[updatedGoal.id];
+      if (controller) {
+        controller.abort();  // Cancel the current POST request
+        setAbortControllers((prevControllers) => {
+          const { [updatedGoal.id]: _, ...rest } = prevControllers;  // Remove the aborted controller
+          return rest;
+        });
+      }
+  
+      // Step 2: Immediately update the UI and local storage
       setGoals((prevGoals) =>
-        prevGoals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g))
+        prevGoals.map((goal) => (goal.id === updatedGoal.id ? { ...updatedGoal, isPendingSync: true } : goal))
       );
+      
+      await updateGoalLocally(updatedGoal);  // Save the updated goal to local storage (with isPendingSync)
+  
+      // Step 3: Attempt to sync the updated goal with the server in the background
+      const abortController = new AbortController();
+      setAbortControllers((prevControllers) => ({
+        ...prevControllers,
+        [updatedGoal.id]: abortController,  // Track the controller for this updated goal
+      }));
+  
+      await syncGoalToServer(updatedGoal, (syncedGoals) => {
+        // Step 4: Replace the goal in local storage and UI after successful sync
+        setGoals(syncedGoals);
+        
+        // Clean up the AbortController after sync
+        setAbortControllers((prevControllers) => {
+          const { [updatedGoal.id]: _, ...rest } = prevControllers;  // Remove the abort controller for this goal
+          return rest;
+        });
+      }, abortController);
+  
     } catch (error) {
-      console.error("Failed to sync updated goal to the server:", error);
+      if (error.name === 'AbortError') {
+        console.log('Update goal request was aborted.');
+      } else {
+        console.error("Failed to update goal:", error);
+      }
     }
   };
+  
 
   const handleDeleteGoal = async (goalId) => {
     try {

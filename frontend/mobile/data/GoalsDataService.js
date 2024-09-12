@@ -174,30 +174,26 @@ export const addGoalToServer = async (goal, signal) => {
 };
 
 
-export const updateGoalOnServer = async (goal) => {
-  const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;
-
-  if (!goal.title) {
-    console.log("Title is missing in the goal object before update:", goal);
-    throw new Error("Goal.title cannot be null");
-  }
+export const updateGoalOnServer = async (goal, signal) => {
+  const url = `${API_URL}/users/${goal.userId}/goals/${goal.id}`;  // Use goal ID to update
 
   const goalData = {
-    title: goal.title, 
-    createdby: goal.createdby || goal.creator, 
-    targetDate: goal.targetDate || null, 
-    goal: goal.goal, 
+    title: goal.goalTitle,
+    createdby: goal.creator,
+    targetDate: goal.targetDate || null,
+    goal: goal.goal,
     createdAt: goal.createdAt,
     userId: goal.userId,
   };
 
   try {
     const response = await fetch(url, {
-      method: 'PUT',
+      method: 'PUT',  // Use PUT for updating existing goals
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(goalData),
+      signal,
     });
 
     if (!response.ok) {
@@ -210,6 +206,7 @@ export const updateGoalOnServer = async (goal) => {
     throw error;
   }
 };
+
 
 export const deleteGoalFromServer = async (goalId) => {
   const url = `${API_URL}/users/${userId}/goals/${goalId}`;
@@ -238,36 +235,40 @@ export const addGoalToLocal = async (goal) => {
   
 export const syncGoalToServer = async (goal, updateGoalsInUI, abortController) => {
   try {
-    // Pass the abort signal to the fetch call
     const controller = abortController || new AbortController();
     const signal = controller.signal;
 
-    const syncedGoal = await addGoalToServer(goal, signal);  // Passing the abort signal
+    let syncedGoal;
+
+    if (!goal.isPendingSync) {
+      // If the goal is not pending sync (it exists on the server), update it with PUT
+      syncedGoal = await updateGoalOnServer(goal, signal);  // Use PUT request for update
+    } else {
+      // If the goal is pending sync, it's a new goal, use POST
+      syncedGoal = await addGoalToServer(goal, signal);  // Use POST request for new goal
+    }
+
     const localGoals = await loadGoalsFromLocal();
 
-    // Update the goal with the server-generated ID and clear the pending sync flag
+    // Update the goal with the server response and clear the isPendingSync flag
     const updatedGoals = localGoals.map(g => g.id === goal.id ? { ...syncedGoal, isPendingSync: false } : g);
     await saveGoalsToLocal(updatedGoals);
 
-    // Update the UI immediately after syncing
     if (updateGoalsInUI) {
       updateGoalsInUI(updatedGoals);
     }
 
-    return syncedGoal; // Return the goal with the correct server ID
+    return syncedGoal; // Return the synced goal
   } catch (error) {
     if (error.name === 'AbortError') {
-      console.log("Add goal request was aborted.");
+      console.log("Sync request was aborted.");
     } else {
-      console.log("Failed to sync new goal to the server:", error);
+      console.log("Failed to sync goal to server:", error);
     }
     return goal; // Return the goal with the pending sync tag intact
   }
 };
 
-  
-  
-  
 
 export const updateGoal = async (goal) => {
   const localGoals = await loadGoalsFromLocal();
@@ -283,6 +284,12 @@ export const updateGoal = async (goal) => {
     console.log("Failed to sync updated goal to the server:", error);
     return goal;
   }
+};
+
+export const updateGoalLocally = async (goal) => {
+  const localGoals = await loadGoalsFromLocal();
+  const updatedGoals = localGoals.map((g) => (g.id === goal.id ? { ...goal, isPendingSync: true } : g));
+  await saveGoalsToLocal(updatedGoals);
 };
 
 export const deleteGoalFromLocal = async (goalId) => {
